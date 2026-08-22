@@ -18,15 +18,18 @@ The bootstrap does not satisfy the Dataset Gate and must not be used to claim re
 The first target is:
 
 ```text
-LOCAL_YARN_V1
+experiment_id = EXP_001
+  -> LOCAL_YARN_V1
   -> DATA_DEBUG_V1
   -> W03_JOIN_V1
-  -> Spark-on-YARN application
-  -> Spark application ID
-  -> Spark History Server/Event Log + YARN ResourceManager evidence
-  -> immutable raw artifacts
-  -> EXP_001
+  -> spark-submit with resolved C1
+  -> spark_application_id = application_...
+  -> immutable Spark History/Event Log + YARN ResourceManager evidence
+  -> later normalization
+  -> execution_id = EXEC_...
 ```
+
+`EXP_001` is assigned before submission and remains the experiment ID. It does not replace the source-observed `spark_application_id` or the canonical normalized `execution_id`.
 
 ### 2.2 Bootstrap Dataset
 
@@ -41,14 +44,30 @@ The target size is a planning range, not the model input. Downstream records use
 
 - Workload: `W03_JOIN_V1`, defined in `workload_catalog.md`.
 - Configuration ID: `C1`.
-- Executors: 1.
-- Executor cores: 1.
-- Executor memory: 1 GiB.
+- Configuration status: **TBD** until `LOCAL_YARN_V1` is **VERIFIED**.
 - Dynamic allocation: disabled.
 - Adaptive Query Execution (AQE): disabled.
-- `spark.sql.shuffle.partitions`: explicitly set and held fixed for all repeats of this experiment.
+- `spark.sql.shuffle.partitions`: resolved value is **TBD**; after resolution it is fixed for all comparable repeats.
 
-Executor memory overhead, driver memory, shuffle partition count, and queue settings must be resolved against the deployed YARN minimum-allocation and capacity limits before submission. If `C1` is invalid in the verified environment, record the incompatibility and approve the smallest valid replacement rather than silently changing the experiment.
+Required properties of `C1`:
+
+- static allocation;
+- valid under the verified YARN scheduler, container, and NodeManager limits;
+- a conservative request that leaves capacity for the ApplicationMaster/driver and local services;
+- sufficient to complete `W03_JOIN_V1` on `DATA_DEBUG_V1` without host swap.
+
+Resolved values:
+
+| Field | Value before environment verification |
+|---|---|
+| `num_executors` | TBD |
+| `executor_cores` | TBD |
+| `executor_memory` | TBD |
+| `executor_memory_overhead` | TBD |
+| `driver_memory` / ApplicationMaster overhead | TBD |
+| `spark.sql.shuffle.partitions` | TBD |
+
+Resolve all values against measured YARN minimum/maximum allocation, usable NodeManager memory, and driver/ApplicationMaster overhead before submission. Record the resolved effective configuration in the `EXP_001` experiment record; never backfill the current planning document as if those values had been known earlier.
 
 ## 3. Full Benchmark Specification
 
@@ -149,21 +168,22 @@ Spark measurements can be noisy. When practical:
 Every run must record:
 
 - experiment ID;
-- `benchmark_environment_id` resolving exact Spark/Hadoop/Java/Python/deployment image metadata;
+- `benchmark_environment_id` and `environment_snapshot_ref` resolving exact Spark/Hadoop/Java/Python/deployment image and capacity metadata;
 - workload family/version;
 - workload ID and version;
 - input dataset ID/version, generator version, seed, row counts, partition count, and actual materialized size;
 - experiment repeat index;
 - exact Spark config;
 - AQE state and configured shuffle partition count;
-- Spark/Hadoop versions;
-- cluster/local environment information;
 - start/end time;
 - code revision;
 - raw contract/collector versions;
 - raw data references;
 - observed status/runtime/resource outcomes;
+- run-specific host-swap and background-load flags;
 - anomaly notes.
+
+Static environment attributes are stored in the referenced environment snapshot, not manually duplicated in every experiment record. Source-observed versions required for raw provenance remain governed by `raw_data_contract.md`.
 
 ## 8. Run Validity and Anomaly Rules
 

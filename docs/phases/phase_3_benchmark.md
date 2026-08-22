@@ -17,6 +17,8 @@ Phase 3
 
 Bootstrap runs may be retained with complete lineage, but they do not by themselves satisfy Phase 3 coverage or the Dataset Gate.
 
+Full systematic Phase 3 benchmark execution begins only after the Phase 1 collection path is working and the Data Gate has been approved. This does not prohibit implementing the minimal dataset generator, workload, runner, and environment foundation required for the Phase 1 Benchmark Bootstrap.
+
 ## Required Outputs
 
 - benchmark workload definitions;
@@ -24,7 +26,7 @@ Bootstrap runs may be retained with complete lineage, but they do not by themsel
 - configuration ranges;
 - experiment IDs/records;
 - raw captured outputs for each run;
-- data coverage/profiling report.
+- data coverage/profiling report;
 - explicit separation of bootstrap/debug runs from the systematic coverage matrix.
 
 ## Workload Coverage

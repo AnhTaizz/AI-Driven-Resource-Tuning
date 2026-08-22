@@ -3,7 +3,7 @@
 ## 1. Status and Purpose
 
 - Environment ID: `LOCAL_YARN_V1`
-- Status: **PLANNED / NOT FROZEN**
+- Current status: **PLANNED**
 - Physical host: personal workstation with 16 GB physical RAM
 - Purpose: controlled local Spark-on-YARN research testbed
 - Non-goal: production-cluster emulation
@@ -31,16 +31,16 @@ Worker 2
 
 ## 3. Initial Planned Resource Envelope
 
-| Component | Planned capacity | Freeze status |
+| Component | Planned capacity | Evidence status |
 |---|---:|---|
-| NodeManager `NM1` | about 2 vcores / about 3 GB YARN memory | NOT FROZEN |
-| NodeManager `NM2` | about 2 vcores / about 3 GB YARN memory | NOT FROZEN |
+| NodeManager `NM1` | about 2 vcores / about 3 GB YARN memory | PLANNED |
+| NodeManager `NM2` | about 2 vcores / about 3 GB YARN memory | PLANNED |
 
 These values are feasibility estimates for a 16 GB workstation. Container minimum allocation, OS/Docker overhead, HDFS/Spark service memory, and usable host memory must be measured before benchmark configuration bounds are approved. The deployed values may be smaller.
 
 ## 4. Required Verified Snapshot
 
-Before `benchmark_environment_id = LOCAL_YARN_V1` is frozen, record:
+Before the status of `benchmark_environment_id = LOCAL_YARN_V1` changes to **VERIFIED**, observe and record:
 
 - host CPU model and logical/physical core counts;
 - physical RAM and measured available RAM before services start;
@@ -72,17 +72,17 @@ Store environment-specific endpoints and secrets outside committed documentation
 - [ ] YARN ResourceManager exposes the same application ID/attempt evidence.
 - [ ] Host swap and background-load observations can be recorded.
 - [ ] Exact versions and immutable image/distribution identifiers are captured.
-- [ ] The resolved snapshot is reviewed before status changes to `VERIFIED/FROZEN`.
+- [ ] The resolved snapshot is reviewed before the environment status changes to `VERIFIED`.
 
 ## 6. Validity and Limitations
 
 - Host swap during a benchmark invalidates that run pending investigation.
 - Excessive background load must be flagged; important comparisons should be rerun.
-- Two logical NodeManagers on one host share CPU, memory bandwidth, disk, and host noise. They do not provide physical-node independence.
+- Two logical NodeManagers/containers on one host share CPU, RAM, memory bandwidth, disk, network, and host noise. They are not equivalent to independent physical enterprise workers.
 - Local configurations and recommendations are specific to `LOCAL_YARN_V1`.
 - Production/company use requires collecting target-environment execution history and retraining or explicitly calibrating the model/policy for that environment.
 - Company history must retain its own environment IDs and provenance; it must not be relabeled as local benchmark data.
 
 ## 7. Change Control
 
-Any change to capacity, Spark/Hadoop patch version, image digest, scheduler boundary, or service topology creates a new verified snapshot. A material compatibility or capacity change should receive a new `benchmark_environment_id` rather than silently mutating frozen evidence.
+After an environment becomes **VERIFIED**, any material change to capacity, Spark/Hadoop patch version, image digest, scheduler boundary, or service topology creates a new environment snapshot. A material compatibility or capacity change should receive a new `benchmark_environment_id` rather than silently mutating verified evidence.

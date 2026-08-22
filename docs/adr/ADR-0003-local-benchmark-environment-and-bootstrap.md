@@ -67,12 +67,12 @@ Cons:
 Select Option B.
 
 1. Create `LOCAL_YARN_V1` on a single personal workstation with 16 GB physical RAM.
-2. Run two logical YARN NodeManagers on that host, initially planning approximately 2 vcores and 3 GB YARN memory per NodeManager. These capacities are **not frozen** until deployment measurement and review.
+2. Run two logical YARN NodeManagers on that host, initially **PLANNED** at approximately 2 vcores and 3 GB YARN memory per NodeManager. Actual capacities remain **TBD** until deployment measurement; the environment becomes **VERIFIED** only after the observed snapshot is reviewed.
 3. Use HDFS, YARN ResourceManager, Spark History Server/event logs, deterministic synthetic data, versioned Spark workloads, and experiment specifications as a benchmark data-generation subsystem.
 4. Add a Benchmark Bootstrap prerequisite before the Phase 1 end-to-end trace without creating or renumbering a phase.
-5. Bootstrap with `DATA_DEBUG_V1` (approximately 100–300 MB), `W03_JOIN_V1`, and configuration `C1` (1 executor, 1 core, 1 GiB executor memory), subject to verified YARN allocation validity.
+5. Bootstrap with `DATA_DEBUG_V1` (approximately 100–300 MB), `W03_JOIN_V1`, and configuration ID `C1`. The executor count, executor cores, executor memory, overhead, driver/ApplicationMaster allowance, and shuffle partition count remain **TBD** until `LOCAL_YARN_V1` is **VERIFIED**. The resolved `C1` must be conservative, static, valid under observed YARN limits, and sufficient to complete the bootstrap workload.
 6. Disable dynamic allocation and AQE for the initial controlled experiments. Fix and record `spark.sql.shuffle.partitions` within each experiment.
-7. Target `EXP_001` as the first trace from Spark submission through application ID to Spark History/YARN raw evidence.
+7. Assign `experiment_id = EXP_001` before submission, capture the source-observed `spark_application_id`, preserve Spark History/YARN raw evidence, and later assign a distinct canonical `execution_id` during normalization.
 8. Treat detected host swap as invalid pending investigation and flag excessive background load.
 9. Use Phase 3 for systematic/full benchmark generation; bootstrap runs alone do not satisfy the Dataset Gate.
 10. Treat local models/recommendations as environment-specific. Production/company deployment requires target-environment history plus retraining or explicit calibration.
@@ -99,10 +99,10 @@ Negative/trade-offs:
 
 Validate this decision when:
 
-- the exact environment snapshot is recorded and frozen as `LOCAL_YARN_V1`;
+- the exact environment snapshot is observed, reviewed, and marked **VERIFIED** as `LOCAL_YARN_V1`;
 - `DATA_DEBUG_V1` is materialized and measured;
 - `W03_JOIN_V1` completes on YARN;
 - one application ID is correlated across Spark History/event-log and YARN evidence;
-- `EXP_001` is recorded with immutable raw artifacts and anomaly observations.
+- `experiment_id = EXP_001` is linked to its `spark_application_id`, immutable raw artifacts, and anomaly observations; later normalization produces a distinct `execution_id`.
 
 Revisit if the 16 GB host cannot run the minimum topology without swap, `C1` violates verified YARN constraints, required source evidence is unavailable, or target-environment history changes the transfer/calibration strategy.

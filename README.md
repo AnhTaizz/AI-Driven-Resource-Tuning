@@ -6,8 +6,9 @@ Research-oriented prototype for recommending Spark resource configurations from 
 
 - Current phase: Phase 1 — Historical Data Collection
 - Current gate: Data Gate — not yet approved
-- Local benchmark environment: `LOCAL_YARN_V1` — planned, not frozen
-- Next evidence target: `DATA_DEBUG_V1` → `W03_JOIN_V1` → Spark-on-YARN → Spark History/YARN → `EXP_001`
+- Local benchmark environment: `LOCAL_YARN_V1` — `PLANNED`
+- Bootstrap configuration `C1`: numeric resource values remain `TBD` until the environment is `VERIFIED`
+- Next evidence target: `experiment_id = EXP_001` → `DATA_DEBUG_V1` → `W03_JOIN_V1` → `spark_application_id` → raw Spark History/YARN evidence → later `execution_id`
 
 See `PROJECT_STATE.md` for approved decisions, open questions, risks, and the current milestone.
 
@@ -59,9 +60,28 @@ The MVP does not provide autonomous production tuning, scheduler modification, d
 ├── README.md
 ├── AGENTS.md
 ├── PROJECT_STATE.md
-├── docs/       # requirements, architecture, contracts, phases, ADRs
-├── src/        # implementation modules as phases are built
-└── data/       # project data zones/artifacts under their applicable contracts
+├── configs/
+│   ├── environments/
+│   ├── datasets/
+│   ├── workloads/
+│   └── experiments/
+├── docs/                 # requirements, contracts, phases, ADRs
+├── infrastructure/
+│   └── docker/           # scaffold only until deployment is implemented
+├── src/
+│   ├── benchmark/
+│   │   ├── generation/
+│   │   ├── workloads/
+│   │   └── runner/
+│   ├── collection/
+│   ├── normalization/
+│   ├── features/
+│   ├── datasets/
+│   ├── baselines/
+│   ├── modeling/
+│   ├── optimization/
+│   └── recommendation/
+└── tests/
 ```
 
 A Docker/bootstrap quickstart will be added only after the infrastructure has run successfully and the commands have been verified.

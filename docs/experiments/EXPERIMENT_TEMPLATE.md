@@ -2,27 +2,29 @@
 
 ## Metadata
 
-- Status: PLANNED
+- `status`: PLANNED
+- `experiment_id`:
 - Date:
 - Owner:
 - Git revision:
-- Dataset ID/version:
-- Dataset generator version:
-- Dataset seed:
-- Dataset manifest reference:
-- Workload ID/version:
-- Experiment repeat index:
-- Feature-set version:
-- Model version:
-- Environment:
-- Spark version:
-- Hadoop/YARN version:
-- Benchmark environment ID:
-- Deployment image/distribution version or digest:
-- Java/Python versions:
-- Random seed:
-- Host swap observed: true/false/unknown
-- Background-load quality flag:
+- `dataset_id` / `dataset_version`:
+- `dataset_generator_version`:
+- `dataset_seed`:
+- `dataset_manifest_ref`:
+- `workload_id` / `workload_version`:
+- `experiment_repeat_index`:
+- `feature_set_version`:
+- `model_version`:
+- `benchmark_environment_id`:
+- `environment_snapshot_ref`:
+- `spark_application_id`:
+- `execution_id` (after normalization):
+- `raw_artifact_refs`:
+- `random_seed`:
+- `host_swap_observed`: true/false/unknown
+- `background_load_flag`:
+
+Static Spark/Hadoop/Java/Python versions, image digest, topology, and NodeManager capacity resolve through the environment snapshot. Do not manually duplicate them here. Source-observed versions required for raw provenance remain in the raw artifact manifests.
 
 ## Research Question
 
@@ -51,7 +53,7 @@ driver_memory:
 executor_memory_overhead:
 dynamic_allocation_enabled:
 aqe_enabled:
-spark_sql_shuffle_partitions:
+configured_shuffle_partitions:
 ```
 
 ## Procedure

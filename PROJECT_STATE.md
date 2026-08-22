@@ -18,8 +18,8 @@
 - Logical topology: **two YARN NodeManagers on one physical host**.
 - Purpose: a controlled Spark/YARN experimental testbed that produces real Spark executions and real Spark History Server/YARN evidence from synthetic inputs.
 - Non-goal: production-cluster emulation or evidence that local configurations transfer directly to a company cluster.
-- Initial capacity envelope: approximately 2 vcores and 3 GB of YARN memory per NodeManager; **NOT FROZEN** until the deployed environment is measured and verified.
-- Planned environment identity: `LOCAL_YARN_V1`; the ID becomes frozen only after its exact runtime and capacity snapshot is recorded in `docs/benchmark_environment.md`.
+- Initial capacity envelope: **PLANNED** at approximately 2 vcores and 3 GB of YARN memory per NodeManager; actual values remain **TBD** until measured from the deployed environment.
+- Planned environment identity: `LOCAL_YARN_V1`; its evidence status changes to **VERIFIED** only after the exact runtime and capacity snapshot is observed and recorded in `docs/benchmark_environment.md`.
 
 ## Approved Research Framing
 
@@ -82,6 +82,7 @@ Phase 1 must produce:
 - Exact Spark 3.5.x patch version present in the benchmark runtime: **to be verified from the deployed environment**
 - Exact Hadoop/YARN 3.3.x patch version present in the benchmark runtime: **to be verified from the deployed environment**
 - Exact Java/Python versions and deployable image/distribution digest: **to be verified and assigned a `benchmark_environment_id`**
+- Exact `C1` bootstrap values for executor count, executor cores, executor memory, memory overhead, driver/ApplicationMaster overhead, and shuffle partitions: **TBD until `LOCAL_YARN_V1` is VERIFIED**
 - Authentication/security requirements for real cluster APIs: **TBD**
 - Input data size source for all workload types: **TBD**
 - Whether executor-level CPU/utilization is consistently available from chosen sources: **TBD**
@@ -101,12 +102,16 @@ Phase 1 must produce:
 ## Next Milestone
 
 ```text
-Bootstrap local Spark-on-YARN environment
+Assign experiment_id = EXP_001
+  -> bootstrap local Spark-on-YARN environment
   -> generate DATA_DEBUG_V1
-  -> execute W03_JOIN_V1 with bootstrap configuration C1
-  -> obtain Spark application ID
-  -> verify Spark History Server and YARN evidence
-  -> produce EXP_001
+  -> resolve the TBD values of bootstrap configuration C1
+  -> spark-submit W03_JOIN_V1
+  -> obtain spark_application_id = application_...
+  -> collect and verify raw Spark History Server/YARN evidence
+  -> later normalize to execution_id = EXEC_...
 ```
 
-This bootstrap is a prerequisite for the Phase 1 end-to-end collector trace, not a new numbered phase and not the systematic Phase 3 benchmark. After the environment snapshot is verified, implement Phase 1 against `docs/raw_data_contract.md`. Do not proceed to full feature engineering until the Data Gate criteria in `docs/phases/phase_1_collection.md` pass.
+`EXP_001` is the experiment identity allocated before submission. It is not the Spark application ID or the canonical normalized execution ID. The Phase 1 milestone ends with traceable raw evidence; Phase 2 normalization later assigns `execution_id`.
+
+This bootstrap is a prerequisite for the Phase 1 end-to-end collector trace, not a new numbered phase and not the systematic Phase 3 benchmark. After the environment snapshot is **VERIFIED**, implement Phase 1 against `docs/raw_data_contract.md`. Do not proceed to full feature engineering until the Data Gate criteria in `docs/phases/phase_1_collection.md` pass.

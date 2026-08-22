@@ -2,7 +2,7 @@
 
 ## 1. Purpose
 
-This catalog defines stable Spark jobs for reproducible local experiments. A workload version fixes its logical transformations, action/materialization boundary, required inputs, and controlled settings. Resource configurations vary in experiment specs, not inside workload code.
+This catalog defines the **APPROVED** Spark workload logic for the initial V1 benchmark suite. A workload version fixes its logical transformations, action/materialization boundary, required inputs, and controlled settings. Resource configurations vary in experiment specs, not inside workload code.
 
 ## 2. Common Contract
 
@@ -24,6 +24,8 @@ Common initial controls:
 - workload logic and input data fixed while resource configurations are compared;
 - output written to an experiment-specific path or otherwise fully materialized;
 - no silent use of cached results between measured runs.
+- output format fixed to Parquet with Snappy compression;
+- correctness checks complete before an execution is eligible for benchmark/model data.
 
 AQE-enabled or materially changed workload logic requires a distinct experiment series or workload version.
 
@@ -31,57 +33,57 @@ AQE-enabled or materially changed workload logic requires a distinct experiment 
 
 - **Purpose:** low-shuffle ETL/filter/projection reference.
 - **Input tables:** `orders`.
-- **Transformations:** filter to a documented date/status predicate; project stable order/customer/product/amount fields; derive a documented amount bucket.
-- **Expected Spark behavior:** scan and narrow transformations with little or no wide shuffle before output materialization.
-- **Action/materialization:** write the filtered projection to an experiment-specific output path and record output row count/bytes.
-- **Controlled settings:** fixed predicate, selected columns, output format, compression, AQE state, and output partition rule.
+- **Transformations:** read `orders`; filter `quantity >= 2`; project `(order_id, customer_id, product_id, amount, event_timestamp)` without adding derived columns.
+- **Expected Spark behavior:** scan/filter/projection reference composed of narrow transformations before the output action.
+- **Action/materialization:** write the projected rows as Parquet/Snappy to the experiment-specific output path; record output row count and bytes.
+- **Controlled settings:** predicate and projected columns above, input dataset version, AQE state, dynamic-allocation state, and output path.
 - **Version:** `V1`.
 
 ## 4. W02_AGGREGATION_V1
 
 - **Purpose:** measure group-by aggregation and moderate shuffle behavior.
-- **Input tables:** `orders`, `customers` when region is required.
-- **Transformations:** join customer region if needed; group by documented date bucket, region, and order status; compute order count, total quantity, total amount, and average amount.
-- **Expected Spark behavior:** wide aggregation shuffle with bounded output cardinality.
-- **Action/materialization:** write the aggregate table and validate aggregate row count plus total-order-count reconciliation.
-- **Controlled settings:** grouping keys, aggregation formulas, date range, join semantics, shuffle partitions, and AQE state.
+- **Input tables:** `orders` only.
+- **Transformations:** `groupBy(customer_id)`; calculate `count(*) AS order_count`, `sum(amount) AS total_amount`, and `avg(amount) AS average_amount`.
+- **Expected Spark behavior:** keyed aggregation with a wide exchange before materialization.
+- **Action/materialization:** write `(customer_id, order_count, total_amount, average_amount)` as Parquet/Snappy; validate that `sum(order_count)` equals the input order count.
+- **Controlled settings:** grouping key and formulas above, input dataset version, fixed shuffle partitions, AQE off, and dynamic allocation off.
 - **Version:** `V1`.
 
 ## 5. W03_JOIN_V1
 
 - **Purpose:** bootstrap and measure a representative multi-table join followed by aggregation.
 - **Input tables:** `orders`, `customers`, `products`.
-- **Transformations:** `orders JOIN customers` on `customer_id`; join `products` on `product_id`; group by `(region, category)`; compute order count, total quantity, and total order amount.
-- **Expected Spark behavior:** join exchanges as selected by Spark under controlled settings, followed by a group-by shuffle.
+- **Transformations:** inner join `orders` to `customers` on `customer_id`; inner join the result to `products` on `product_id`; `groupBy(region, category)`; calculate `count(*) AS order_count`, `sum(quantity) AS total_quantity`, and `sum(amount) AS total_amount`.
+- **Expected Spark behavior:** two joins under a fixed broadcast-threshold setting followed by a keyed aggregation exchange.
 - **Action/materialization:** write grouped results to an experiment-specific path; record output row count and reconcile aggregate order count with joined input rows.
-- **Controlled settings:** inner-join semantics, no broadcast hint in V1, fixed filters, fixed shuffle partitions, AQE off, dynamic allocation off, and consistent output format/compression.
+- **Controlled settings:** inner-join semantics, no explicit broadcast hint, `spark.sql.autoBroadcastJoinThreshold` fixed within comparable experiments, fixed shuffle partitions, AQE off, dynamic allocation off, and Parquet/Snappy output.
 - **Version:** `V1`.
 
-`W03_JOIN_V1` is the bootstrap workload for `EXP_001` with `DATA_DEBUG_V1` and configuration `C1` from `benchmark_plan.md`.
+`W03_JOIN_V1` is the bootstrap workload for `experiment_id = EXP_001` with `DATA_DEBUG_V1` and configuration ID `C1` from `benchmark_plan.md`. The numeric values of `C1` remain TBD until the environment is VERIFIED.
 
 ## 6. W04_SHUFFLE_HEAVY_V1
 
 - **Purpose:** exercise high data movement without intentionally fabricating a failure.
 - **Input tables:** `orders`.
-- **Transformations:** repartition by a documented high-cardinality key; perform a keyed aggregation; repartition/sort the aggregate by a second documented key before output.
-- **Expected Spark behavior:** multiple wide exchanges, elevated shuffle read/write, and sensitivity to cores/executors/shuffle partitions.
-- **Action/materialization:** write the final sorted/partitioned aggregate and validate row counts/checksums.
-- **Controlled settings:** repartition keys/count, sort keys, aggregation formulas, shuffle partitions, AQE state, and output format.
+- **Transformations:** repartition `orders` to `configured_shuffle_partitions` by `customer_id`; `groupBy(customer_id, product_id)`; calculate `count(*) AS order_count`, `sum(quantity) AS total_quantity`, and `sum(amount) AS total_amount`; repartition the aggregate to `configured_shuffle_partitions` by `product_id`; `sortWithinPartitions(product_id, customer_id)`.
+- **Expected Spark behavior:** multiple explicitly controlled wide exchanges and a high-cardinality keyed aggregation.
+- **Action/materialization:** write the final sorted aggregate as Parquet/Snappy; validate that `sum(order_count)` equals the input order count.
+- **Controlled settings:** repartition keys and counts above, aggregation/sort keys above, fixed shuffle partitions, AQE off, and dynamic allocation off.
 - **Version:** `V1`.
 
-The exact repartition count must be declared in the experiment/workload config; it must not silently follow a changing default.
+The exact repartition count equals the experiment's resolved `configured_shuffle_partitions`; it must not silently follow a changing runtime default.
 
 ## 7. W05_SKEW_JOIN_V1
 
-- **Purpose:** measure observed effects of a known, generated key distribution skew.
-- **Input tables:** `orders` with `SKEWED` distribution, `customers`, optionally `products` if declared by the experiment.
-- **Transformations:** join `orders` to `customers` on `customer_id`; group by region and a documented key-derived bucket; aggregate counts and amounts.
-- **Expected Spark behavior:** imbalanced shuffle partitions/tasks caused by measured hot-key frequency, with possible spill/straggler evidence depending on configuration.
-- **Action/materialization:** write aggregate output and record per-key/input distribution evidence plus output validation.
-- **Controlled settings:** dataset skew definition/version, join semantics, no skew hint in V1, fixed shuffle partitions, AQE off, dynamic allocation off, and output format.
+- **Purpose:** provide a controlled skewed-join workload for studying customer-key distribution and task-imbalance conditions.
+- **Input tables:** `orders` with the V1 `SKEWED` customer-key distribution and `customers`.
+- **Transformations:** repartition `orders` to `configured_shuffle_partitions` by `customer_id`; inner join `orders` to `customers` on `customer_id`; `groupBy(region, customer_type)`; calculate `count(*) AS order_count`, `sum(amount) AS total_amount`, and `avg(amount) AS average_amount`.
+- **Expected Spark behavior:** designed to create controlled customer-key distribution skew and task-imbalance conditions during the customer-key exchange/join path.
+- **Action/materialization:** write the aggregate as Parquet/Snappy; record the input distribution manifest and validate that `sum(order_count)` equals the joined order count.
+- **Controlled settings:** V1 skew definition and resolved fractions, repartition key/count, inner-join semantics, no skew/broadcast hint, fixed `spark.sql.autoBroadcastJoinThreshold`, fixed shuffle partitions, AQE off, and dynamic allocation off.
 - **Version:** `V1`.
 
-Skew, spill, OOM, and failure must be observed from real execution. The generator may create a documented skewed distribution, but experiment records may not invent outcome labels.
+Only the input key distribution and transformation structure are prescribed. Runtime, task-duration imbalance, spill, OOM, failure, and other performance outcomes must be observed from real execution and must never be invented by the workload contract.
 
 ## 8. Versioning and Change Control
 

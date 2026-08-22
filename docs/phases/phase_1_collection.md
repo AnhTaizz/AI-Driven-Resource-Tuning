@@ -16,7 +16,7 @@ This prerequisite does **not** change phase numbering. It creates the minimum re
 - [ ] One versioned Spark workload exists (`W03_JOIN_V1`).
 - [ ] One Spark application can complete and return a Spark application ID.
 
-The intended first trace is `EXP_001`, using the bootstrap specification in `docs/benchmark_plan.md`. One to five bootstrap executions may be used to resolve environment or collection issues. They are collector fixtures/evidence, not Dataset Gate coverage.
+The bootstrap experiment is assigned `experiment_id = EXP_001` before submission. Spark/YARN then supplies `spark_application_id`; Phase 1 preserves the corresponding raw evidence. Phase 2 normalization later assigns the canonical `execution_id`. One to five bootstrap executions may be used to resolve environment or collection issues. They are collector fixtures/evidence, not Dataset Gate coverage.
 
 ## Scope
 
