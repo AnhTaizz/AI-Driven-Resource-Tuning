@@ -6,6 +6,9 @@ This repository uses **docs-as-code**: architectural, data, ML, and evaluation d
 
 - `project_requirements.md` — stable project requirements, requirement disposition, acceptance evidence, and scope-change rules.
 - `architecture.md` — system boundaries, components, data flow, and non-goals.
+- `benchmark_environment.md` — planned and verified local Spark-on-YARN topology, capacity snapshot, and limitations.
+- `synthetic_data_spec.md` — deterministic synthetic domain, generator parameters, materialization, and dataset identity.
+- `workload_catalog.md` — versioned executable Spark workload definitions and controlled settings.
 - `raw_data_contract.md` — immutable collector artifact manifest, integrity, identity, and evolution rules.
 - `data_schema.md` — raw/normalized execution data contract.
 - `feature_schema.md` — feature availability, units, lineage, and leakage rules.
@@ -25,10 +28,11 @@ This repository uses **docs-as-code**: architectural, data, ML, and evaluation d
 
 ## Research Operations
 
-- `experiments/EXPERIMENT_TEMPLATE.md` — one record per benchmark/model experiment.
+- `experiments/EXPERIMENT_TEMPLATE.md` — one record per benchmark/model experiment, including dataset/workload/environment lineage and host-quality observations.
 - `adr/ADR_TEMPLATE.md` — architecture/research decision record template.
 - `adr/ADR-0001-mvp-runtime-and-scope.md` — approved Spark-on-YARN runtime and MVP operational boundaries.
 - `adr/ADR-0002-parallel-sql-boundary.md` — approved within-application SQL concurrency boundary.
+- `adr/ADR-0003-local-benchmark-environment-and-bootstrap.md` — approved local benchmark subsystem, bootstrap, and transfer boundary.
 
 ## Documentation Rules
 

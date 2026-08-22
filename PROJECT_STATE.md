@@ -11,6 +11,16 @@
 - Current phase: **Phase 1 — Historical Data Collection**
 - Current gate: **Data Gate — not yet approved**
 
+## Local Benchmark Strategy
+
+- Status: **PLANNED**
+- Host: personal workstation with **16 GB physical RAM**; CPU and usable memory are still to be measured.
+- Logical topology: **two YARN NodeManagers on one physical host**.
+- Purpose: a controlled Spark/YARN experimental testbed that produces real Spark executions and real Spark History Server/YARN evidence from synthetic inputs.
+- Non-goal: production-cluster emulation or evidence that local configurations transfer directly to a company cluster.
+- Initial capacity envelope: approximately 2 vcores and 3 GB of YARN memory per NodeManager; **NOT FROZEN** until the deployed environment is measured and verified.
+- Planned environment identity: `LOCAL_YARN_V1`; the ID becomes frozen only after its exact runtime and capacity snapshot is recorded in `docs/benchmark_environment.md`.
+
 ## Approved Research Framing
 
 - Unit of observation: one Spark application execution.
@@ -32,6 +42,7 @@
 - MVP feedback loop: explicit offline/manual collection, dataset rebuild/versioning, retraining, validation, and model promotion.
 - MVP warnings: rule-based post-run diagnostics. Live running-job warnings are a stretch goal.
 - Approved decisions: `docs/adr/ADR-0001-mvp-runtime-and-scope.md` and `docs/adr/ADR-0002-parallel-sql-boundary.md`.
+- Local benchmark/bootstrap boundary: `docs/adr/ADR-0003-local-benchmark-environment-and-bootstrap.md`.
 
 ## Current Data Sources
 
@@ -84,8 +95,18 @@ Phase 1 must produce:
 - OOM/failure labels may be too rare for supervised reliability modeling.
 - Repeated benchmark runs may be noisy due to shared-cluster contention, caching, JIT/warmup, and background load.
 - Synthetic Spark-on-YARN results may not transfer directly to a differently sized or configured production cluster.
+- Local recommendations are environment-specific. Production/company deployment requires collection and retraining or explicit calibration using execution history from the target environment.
 - SQL execution/stage concurrency metadata may be absent for some workloads or source versions.
 
-## Next Decision
+## Next Milestone
 
-Deploy and record the exact benchmark environment, then implement Phase 1 against `docs/raw_data_contract.md`. Do not proceed to full feature engineering until the Data Gate criteria in `docs/phases/phase_1_collection.md` pass.
+```text
+Bootstrap local Spark-on-YARN environment
+  -> generate DATA_DEBUG_V1
+  -> execute W03_JOIN_V1 with bootstrap configuration C1
+  -> obtain Spark application ID
+  -> verify Spark History Server and YARN evidence
+  -> produce EXP_001
+```
+
+This bootstrap is a prerequisite for the Phase 1 end-to-end collector trace, not a new numbered phase and not the systematic Phase 3 benchmark. After the environment snapshot is verified, implement Phase 1 against `docs/raw_data_contract.md`. Do not proceed to full feature engineering until the Data Gate criteria in `docs/phases/phase_1_collection.md` pass.

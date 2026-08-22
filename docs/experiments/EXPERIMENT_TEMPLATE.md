@@ -6,7 +6,12 @@
 - Date:
 - Owner:
 - Git revision:
-- Dataset version:
+- Dataset ID/version:
+- Dataset generator version:
+- Dataset seed:
+- Dataset manifest reference:
+- Workload ID/version:
+- Experiment repeat index:
 - Feature-set version:
 - Model version:
 - Environment:
@@ -16,6 +21,8 @@
 - Deployment image/distribution version or digest:
 - Java/Python versions:
 - Random seed:
+- Host swap observed: true/false/unknown
+- Background-load quality flag:
 
 ## Research Question
 
@@ -28,9 +35,10 @@ State a falsifiable hypothesis.
 ## Workload
 
 - Workload family:
-- Workload version:
-- Input dataset/version:
-- Input size:
+- Workload ID/version:
+- Input dataset ID/version:
+- Actual input size:
+- Input row/partition counts:
 - Special characteristics (join/skew/shuffle/etc.):
 
 ## Spark Configuration
@@ -42,6 +50,8 @@ executor_memory:
 driver_memory:
 executor_memory_overhead:
 dynamic_allocation_enabled:
+aqe_enabled:
+spark_sql_shuffle_partitions:
 ```
 
 ## Procedure

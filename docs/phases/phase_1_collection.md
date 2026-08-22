@@ -4,6 +4,20 @@
 
 Collect trustworthy historical execution data from Spark/YARN sources while preserving raw payloads and source lineage.
 
+## Prerequisite — Benchmark Bootstrap
+
+This prerequisite does **not** change phase numbering. It creates the minimum real/test Spark-on-YARN execution required to exercise the Phase 1 collection path; it is not the systematic Phase 3 benchmark.
+
+- [ ] Local Spark-on-YARN environment runs.
+- [ ] HDFS is accessible.
+- [ ] Spark History Server is accessible and event logging is configured.
+- [ ] YARN ResourceManager evidence is accessible.
+- [ ] One versioned debug synthetic dataset exists (`DATA_DEBUG_V1`).
+- [ ] One versioned Spark workload exists (`W03_JOIN_V1`).
+- [ ] One Spark application can complete and return a Spark application ID.
+
+The intended first trace is `EXP_001`, using the bootstrap specification in `docs/benchmark_plan.md`. One to five bootstrap executions may be used to resolve environment or collection issues. They are collector fixtures/evidence, not Dataset Gate coverage.
+
 ## Scope
 
 - Spark History Server REST integration;
@@ -46,9 +60,10 @@ Implement only the historical data collection phase.
 Before coding:
 1. read PROJECT_STATE.md and architecture/data schema docs;
 2. inspect repository structure;
-3. verify the deployed Spark-on-YARN environment and record exact Spark/Hadoop/Java/Python/image versions;
-4. list target endpoints/sources and version assumptions;
-5. propose the smallest collector design.
+3. verify the Benchmark Bootstrap prerequisite;
+4. verify the deployed Spark-on-YARN environment and record exact Spark/Hadoop/Java/Python/image versions;
+5. list target endpoints/sources and version assumptions;
+6. propose the smallest collector design.
 
 Implement:
 - Spark History Server collector

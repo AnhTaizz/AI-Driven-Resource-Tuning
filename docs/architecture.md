@@ -9,13 +9,30 @@ The design intentionally favors a modular monolith/data pipeline over microservi
 ## 2. System Context
 
 ```text
-Spark applications
-      │
-      ├── Spark History Server / Event Logs
-      └── YARN ResourceManager REST API
-                    │
-                    ▼
-             Collection Layer
+                  LOCAL BENCHMARK SYSTEM
+                           |
+             +-------------+-------------+
+             |                           |
+  Synthetic Dataset Generator      Experiment Specs
+             |                           |
+             v                           v
+            HDFS                  Experiment Runner
+             |                           |
+             +-------------+-------------+
+                           v
+                    Spark Workloads
+                           |
+                           v
+                 Local Spark-on-YARN
+                           |
+             +-------------+-------------+
+             |                           |
+             v                           v
+ Spark History Server / Event Logs   YARN ResourceManager
+             |                           |
+             +-------------+-------------+
+                           v
+                    Collection Layer
                     │
                     ▼
              Immutable Raw Zone
@@ -55,9 +72,30 @@ Spark applications
                        Real Spark Validation
 ```
 
+The local benchmark system is a **data-generation subsystem** for research evidence. It is not part of the production recommendation path. Future authorized company executions enter through the same collection/data-contract boundary; they do not need to use the local synthetic generator or experiment runner.
+
 ## 3. Component Boundaries
 
-### 3.1 Collection Layer
+### 3.1 Benchmark Data-Generation Subsystem
+
+Responsibilities:
+
+- materialize deterministic synthetic datasets in HDFS from versioned generator specifications;
+- execute versioned Spark workloads from explicit experiment specifications;
+- submit controlled static-allocation configurations to the local Spark-on-YARN environment;
+- record experiment, dataset, workload, environment, seed, configuration, and repeat lineage;
+- produce real Spark application IDs for collection and later systematic benchmarking.
+
+Non-responsibilities:
+
+- fabricating Spark/YARN metrics or outcomes;
+- emulating a production cluster;
+- collecting or normalizing source evidence;
+- making model or recommendation decisions.
+
+The bootstrap path creates the first one to five executions needed to prove the Phase 1 collector path. Phase 3 later uses the same subsystem for systematic dataset generation. See `benchmark_environment.md`, `synthetic_data_spec.md`, `workload_catalog.md`, and `adr/ADR-0003-local-benchmark-environment-and-bootstrap.md`.
+
+### 3.2 Collection Layer
 
 Responsibilities:
 
@@ -76,7 +114,7 @@ Non-responsibilities:
 - model logic;
 - recommendation decisions.
 
-### 3.2 Raw Zone
+### 3.3 Raw Zone
 
 Raw data is immutable and append-only at the experiment/research level.
 
@@ -93,7 +131,7 @@ A re-run of normalization should not require recollecting source data.
 
 Each payload has an immutable sidecar manifest containing source operation, sanitized request context, collection status, exact environment/source versions, collector version, byte size, and SHA-256 integrity evidence. Retries append new artifacts rather than overwrite prior evidence.
 
-### 3.3 Normalization Layer
+### 3.4 Normalization Layer
 
 Converts source-specific payloads into typed canonical records while preserving source lineage.
 
@@ -107,7 +145,7 @@ Each normalized field should retain:
 
 The normalized topology includes application/config records and child stage, SQL execution, executor, and YARN attempt/container records where supported. SQL/stage interval overlap is preserved for concurrency analysis, while application/executor/YARN allocation remains the resource-accounting boundary.
 
-### 3.4 Feature Pipeline
+### 3.5 Feature Pipeline
 
 Produces one modeling record per execution, plus historical-context features built only from information available before the target execution.
 
@@ -115,11 +153,11 @@ Feature code must be deterministic and tested independently from model code.
 
 Every modeling record has an `as_of_timestamp`. Pre-run and historical-context features must be reproducible using only evidence available strictly before that timestamp.
 
-### 3.5 Baseline Layer
+### 3.6 Baseline Layer
 
 Implements current/default, nearest-history, and simple heuristic recommendations using the same candidate constraints and evaluation protocol as ML where possible.
 
-### 3.6 Model Layer
+### 3.7 Model Layer
 
 MVP target:
 
@@ -130,13 +168,13 @@ MVP target:
 
 A separate reliability model is optional and only justified if labels support it.
 
-### 3.7 Candidate + Optimization Layer
+### 3.8 Candidate + Optimization Layer
 
 Candidate generator enforces hard validity constraints first. Prediction happens only for valid candidates.
 
 Optimization then compares predicted runtime, derived resource cost, and reliability risk. Pareto filtering may be used, followed by a human-approved recommendation policy.
 
-### 3.8 Serving/Demo Layer
+### 3.9 Serving/Demo Layer
 
 The demo may be CLI or Streamlit/FastAPI-backed UI. It must show data provenance and clearly label observed vs predicted values.
 
@@ -185,6 +223,8 @@ The approved MVP compatibility family is Spark 3.5.x with Hadoop/YARN 3.3.x on S
 - The feedback loop is explicit offline collection, dataset rebuild/versioning, retraining, validation, and model promotion.
 - Waste/shortage warnings are post-run diagnostics; live warnings are outside the MVP.
 - Parallel SQL means overlapping SQL executions/stages within one Spark application, as defined by `adr/ADR-0002-parallel-sql-boundary.md`.
+- `LOCAL_YARN_V1` is a single-host, two-NodeManager controlled testbed. Its planned resource envelope is not frozen until verified against the deployed runtime.
+- Local recommendations are environment-specific; transfer to a company/production environment requires target-environment collection and retraining or explicit calibration.
 
 ## 8. Failure Handling
 

@@ -83,7 +83,16 @@ Derived interaction features may include:
 
 Only add interactions if they are interpretable and validated.
 
-### 4.4 Targets
+### 4.4 Future Environment-Relative Candidates
+
+Possible future features include:
+
+- `candidate_requested_core_fraction`
+- `candidate_requested_memory_fraction`
+
+Do not enable these in the initial `LOCAL_YARN_V1`-only feature set: environment capacity would be constant and would not establish cross-environment validity. Consider them only when training/evaluation contains multiple verified benchmark or production environments, the environment registry is joined as-of correctly, and transfer evaluation is explicitly designed. Adding them requires a feature-set version change and leakage/availability review.
+
+### 4.5 Targets
 
 Required:
 
