@@ -1,0 +1,6 @@
+# Local environment overrides and runtime-only evidence.
+configs/environments/*.env
+!configs/environments/*.env.example
+artifacts/environment_snapshots/
+artifacts/infrastructure_smoke/
+

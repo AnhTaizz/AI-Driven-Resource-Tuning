@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ai-resource-tuning/local-yarn-v1.verification-status.schema.json",
+  "title": "LOCAL_YARN_V1 verification evidence status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_classification",
+    "benchmark_environment_id",
+    "verification_id",
+    "started_at",
+    "finished_at",
+    "status",
+    "current_step",
+    "failed_step",
+    "failure_reason",
+    "application_id",
+    "local_yarn_v1_status",
+    "c1_status",
+    "data_gate_status"
+  ],
+  "properties": {
+    "schema_version": { "const": "local_yarn_verification_status_v1" },
+    "evidence_classification": { "const": "INFRASTRUCTURE_VERIFICATION_ONLY" },
+    "benchmark_environment_id": { "const": "LOCAL_YARN_V1" },
+    "verification_id": { "type": "string", "minLength": 1 },
+    "started_at": { "type": "string", "format": "date-time" },
+    "finished_at": { "type": ["string", "null"], "format": "date-time" },
+    "status": { "enum": ["COMPLETE", "FAILED", "INCOMPLETE"] },
+    "current_step": { "type": ["string", "null"] },
+    "failed_step": { "type": ["string", "null"] },
+    "failure_reason": { "type": ["string", "null"] },
+    "application_id": {
+      "anyOf": [
+        { "type": "null" },
+        { "type": "string", "pattern": "^application_[0-9]+_[0-9]+$" }
+      ]
+    },
+    "local_yarn_v1_status": { "const": "PLANNED" },
+    "c1_status": { "const": "TBD" },
+    "data_gate_status": { "const": "NOT_APPROVED" }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "status": { "const": "COMPLETE" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "finished_at": { "type": "string", "format": "date-time" },
+          "failed_step": { "type": "null" },
+          "failure_reason": { "type": "null" },
+          "application_id": { "type": "string", "pattern": "^application_[0-9]+_[0-9]+$" }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "status": { "const": "FAILED" } }, "required": ["status"] },
+      "then": {
+        "properties": {
+          "finished_at": { "type": "string", "format": "date-time" },
+          "failed_step": { "type": "string", "minLength": 1 },
+          "failure_reason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  ]
+}

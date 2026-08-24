@@ -1,0 +1,317 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ai-resource-tuning/local-yarn-v1.snapshot.schema.json",
+  "title": "LOCAL_YARN_V1 environment snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_classification",
+    "benchmark_environment_id",
+    "environment_status",
+    "snapshot_id",
+    "verification_id",
+    "observed_at_utc",
+    "planned_config",
+    "observed_runtime_evidence"
+  ],
+  "properties": {
+    "schema_version": { "const": "local_yarn_snapshot_v2" },
+    "evidence_classification": { "const": "INFRASTRUCTURE_VERIFICATION_ONLY" },
+    "benchmark_environment_id": { "const": "LOCAL_YARN_V1" },
+    "environment_status": { "const": "PLANNED_PENDING_HUMAN_REVIEW" },
+    "snapshot_id": { "type": "string", "minLength": 1 },
+    "verification_id": { "type": "string", "minLength": 1 },
+    "observed_at_utc": { "type": "string", "format": "date-time" },
+    "planned_config": { "$ref": "#/$defs/plannedConfig" },
+    "observed_runtime_evidence": { "$ref": "#/$defs/observedRuntimeEvidence" }
+  },
+  "$defs": {
+    "plannedConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_ref", "runtime_versions", "yarn", "spark"],
+      "properties": {
+        "source_ref": { "type": "string", "minLength": 1 },
+        "runtime_versions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spark", "hadoop", "java", "python"],
+          "properties": {
+            "spark": { "const": "3.5.9" },
+            "hadoop": { "const": "3.3.6" },
+            "java": { "const": "11.0.32+9" },
+            "python": { "const": "3.10.21" }
+          }
+        },
+        "yarn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["nodemanager_count", "per_nodemanager", "allocation", "resource_calculator"],
+          "properties": {
+            "nodemanager_count": { "const": 2 },
+            "per_nodemanager": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["memory_mb", "vcores"],
+              "properties": {
+                "memory_mb": { "const": 2048 },
+                "vcores": { "const": 2 }
+              }
+            },
+            "allocation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimum_memory_mb", "maximum_memory_mb", "minimum_vcores", "maximum_vcores"],
+              "properties": {
+                "minimum_memory_mb": { "const": 256 },
+                "maximum_memory_mb": { "const": 2048 },
+                "minimum_vcores": { "const": 1 },
+                "maximum_vcores": { "const": 2 }
+              }
+            },
+            "resource_calculator": {
+              "const": "org.apache.hadoop.yarn.util.resource.DominantResourceCalculator"
+            }
+          }
+        },
+        "spark": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["dynamic_allocation_enabled", "adaptive_query_execution_enabled", "yarn_archive"],
+          "properties": {
+            "dynamic_allocation_enabled": { "const": false },
+            "adaptive_query_execution_enabled": { "const": false },
+            "yarn_archive": { "const": "hdfs:///spark/jars/spark-3.5.9-jars.zip" }
+          }
+        }
+      }
+    },
+    "versionEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_service", "observed_at_utc", "raw", "normalized"],
+      "properties": {
+        "source_service": { "type": "string", "minLength": 1 },
+        "observed_at_utc": { "type": "string", "format": "date-time" },
+        "raw": { "type": "string", "minLength": 1 },
+        "normalized": { "type": "string", "minLength": 1 }
+      }
+    },
+    "serviceImage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "service_name",
+        "container_name",
+        "container_id",
+        "image_reference",
+        "image_id",
+        "repo_digests"
+      ],
+      "properties": {
+        "service_name": { "type": "string", "minLength": 1 },
+        "container_name": { "type": "string", "minLength": 1 },
+        "container_id": { "type": "string", "minLength": 12 },
+        "image_reference": { "type": "string", "minLength": 1 },
+        "image_id": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+        "repo_digests": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "@sha256:[0-9a-f]{64}$" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "yarnNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "node_id",
+        "state",
+        "total_memory_mb",
+        "available_memory_mb",
+        "total_vcores",
+        "available_vcores"
+      ],
+      "properties": {
+        "node_id": { "type": "string", "minLength": 1 },
+        "state": { "type": "string", "minLength": 1 },
+        "total_memory_mb": { "type": "integer", "minimum": 0 },
+        "available_memory_mb": { "type": ["integer", "null"], "minimum": 0 },
+        "total_vcores": { "type": "integer", "minimum": 0 },
+        "available_vcores": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "observedRuntimeEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_versions",
+        "service_images",
+        "container_runtime",
+        "yarn",
+        "spark",
+        "storage",
+        "host_observation_refs"
+      ],
+      "properties": {
+        "runtime_versions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["spark", "hadoop", "java", "python"],
+          "properties": {
+            "spark": { "$ref": "#/$defs/versionEvidence" },
+            "hadoop": { "$ref": "#/$defs/versionEvidence" },
+            "java": { "$ref": "#/$defs/versionEvidence" },
+            "python": {
+              "type": "array",
+              "minItems": 3,
+              "items": { "$ref": "#/$defs/versionEvidence" },
+              "allOf": [
+                { "contains": { "type": "object", "properties": { "source_service": { "const": "spark-client" } }, "required": ["source_service"] } },
+                { "contains": { "type": "object", "properties": { "source_service": { "const": "nodemanager-1" } }, "required": ["source_service"] } },
+                { "contains": { "type": "object", "properties": { "source_service": { "const": "nodemanager-2" } }, "required": ["source_service"] } }
+              ]
+            }
+          }
+        },
+        "service_images": {
+          "type": "array",
+          "minItems": 7,
+          "items": { "$ref": "#/$defs/serviceImage" },
+          "allOf": [
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "namenode" } }, "required": ["service_name"] } },
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "datanode-1" } }, "required": ["service_name"] } },
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "datanode-2" } }, "required": ["service_name"] } },
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "resourcemanager" } }, "required": ["service_name"] } },
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "nodemanager-1" } }, "required": ["service_name"] } },
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "nodemanager-2" } }, "required": ["service_name"] } },
+            { "contains": { "type": "object", "properties": { "service_name": { "const": "history-server" } }, "required": ["service_name"] } }
+          ]
+        },
+        "container_runtime": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": true
+        },
+        "yarn": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["nodes", "cluster_totals", "effective_allocation", "scheduler"],
+          "properties": {
+            "nodes": {
+              "type": "array",
+              "minItems": 2,
+              "maxItems": 2,
+              "items": { "$ref": "#/$defs/yarnNode" }
+            },
+            "cluster_totals": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["node_count", "total_memory_mb", "available_memory_mb", "total_vcores", "available_vcores"],
+              "properties": {
+                "node_count": { "const": 2 },
+                "total_memory_mb": { "type": "integer", "minimum": 0 },
+                "available_memory_mb": { "type": ["integer", "null"], "minimum": 0 },
+                "total_vcores": { "type": "integer", "minimum": 0 },
+                "available_vcores": { "type": ["integer", "null"], "minimum": 0 }
+              }
+            },
+            "effective_allocation": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["minimum_memory_mb", "maximum_memory_mb", "minimum_vcores", "maximum_vcores", "evidence_source"],
+              "properties": {
+                "minimum_memory_mb": { "type": "integer", "minimum": 1 },
+                "maximum_memory_mb": { "type": "integer", "minimum": 1 },
+                "minimum_vcores": { "type": "integer", "minimum": 1 },
+                "maximum_vcores": { "type": "integer", "minimum": 1 },
+                "evidence_source": { "type": "string", "minLength": 1 }
+              }
+            },
+            "scheduler": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["scheduler_type", "resource_calculator", "queue_policy", "evidence_source"],
+              "properties": {
+                "scheduler_type": { "type": "string", "minLength": 1 },
+                "resource_calculator": { "const": "org.apache.hadoop.yarn.util.resource.DominantResourceCalculator" },
+                "queue_policy": { "type": "object", "minProperties": 1, "additionalProperties": true },
+                "evidence_source": { "type": "string", "minLength": 1 }
+              }
+            }
+          }
+        },
+        "spark": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["application_id", "effective_properties", "history_server_record_ref", "event_log_ref", "evidence_source"],
+          "properties": {
+            "application_id": { "type": "string", "pattern": "^application_[0-9]+_[0-9]+$" },
+            "effective_properties": {
+              "type": "object",
+              "additionalProperties": true,
+              "required": [
+                "spark.dynamicAllocation.enabled",
+                "spark.sql.adaptive.enabled",
+                "spark.sql.shuffle.partitions",
+                "spark.executor.instances",
+                "spark.executor.cores",
+                "spark.executor.memory",
+                "spark.executor.memoryOverhead",
+                "spark.driver.memory",
+                "spark.driver.memoryOverhead"
+              ],
+              "properties": {
+                "spark.dynamicAllocation.enabled": { "const": "false" },
+                "spark.sql.adaptive.enabled": { "const": "false" },
+                "spark.sql.shuffle.partitions": { "type": "string", "minLength": 1 },
+                "spark.executor.instances": { "type": "string", "minLength": 1 },
+                "spark.executor.cores": { "type": "string", "minLength": 1 },
+                "spark.executor.memory": { "type": "string", "minLength": 1 },
+                "spark.executor.memoryOverhead": { "type": "string", "minLength": 1 },
+                "spark.driver.memory": { "type": "string", "minLength": 1 },
+                "spark.driver.memoryOverhead": { "type": "string", "minLength": 1 }
+              }
+            },
+            "history_server_record_ref": { "type": "string", "minLength": 1 },
+            "event_log_ref": { "type": "string", "minLength": 1 },
+            "evidence_source": { "type": "string", "minLength": 1 }
+          }
+        },
+        "storage": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["hdfs_uri", "hdfs_config_ref", "hdfs_report_ref", "spark_event_log_path", "spark_yarn_archive"],
+          "properties": {
+            "hdfs_uri": { "type": "string", "minLength": 1 },
+            "hdfs_config_ref": { "type": "string", "minLength": 1 },
+            "hdfs_report_ref": { "type": "string", "minLength": 1 },
+            "spark_event_log_path": { "type": "string", "minLength": 1 },
+            "spark_yarn_archive": { "type": "string", "minLength": 1 }
+          }
+        },
+        "host_observation_refs": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["phase", "observed_at_utc", "artifact_ref"],
+            "properties": {
+              "phase": { "enum": ["HOST_BASELINE", "CLUSTER_IDLE", "POST_SMOKE"] },
+              "observed_at_utc": { "type": "string", "format": "date-time" },
+              "artifact_ref": { "type": "string", "minLength": 1 }
+            }
+          },
+          "allOf": [
+            { "contains": { "type": "object", "properties": { "phase": { "const": "HOST_BASELINE" } }, "required": ["phase"] } },
+            { "contains": { "type": "object", "properties": { "phase": { "const": "CLUSTER_IDLE" } }, "required": ["phase"] } },
+            { "contains": { "type": "object", "properties": { "phase": { "const": "POST_SMOKE" } }, "required": ["phase"] } }
+          ]
+        }
+      }
+    }
+  }
+}

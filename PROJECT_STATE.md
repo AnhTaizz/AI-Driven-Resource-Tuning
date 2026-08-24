@@ -14,12 +14,15 @@
 ## Local Benchmark Strategy
 
 - Status: **PLANNED**
-- Host: personal workstation with **16 GB physical RAM**; CPU and usable memory are still to be measured.
+- Host: personal workstation with **16 GB physical RAM**; the complete infrastructure bundle observed an Intel Core i5-12450H with 8 physical cores / 12 logical processors, pending human environment review.
 - Logical topology: **two YARN NodeManagers on one physical host**.
 - Purpose: a controlled Spark/YARN experimental testbed that produces real Spark executions and real Spark History Server/YARN evidence from synthetic inputs.
 - Non-goal: production-cluster emulation or evidence that local configurations transfer directly to a company cluster.
-- Initial capacity envelope: **PLANNED** at approximately 2 vcores and 3 GB of YARN memory per NodeManager; actual values remain **TBD** until measured from the deployed environment.
+- Initial implementation envelope: **PLANNED** at 2 vcores and 2048 MB of YARN memory per NodeManager, reduced conservatively from the earlier approximately 3 GB feasibility estimate. The complete infrastructure bundle observed 4096 MB and 4 vcores in total; human approval is still required.
 - Planned environment identity: `LOCAL_YARN_V1`; its evidence status changes to **VERIFIED** only after the exact runtime and capacity snapshot is observed and recorded in `docs/benchmark_environment.md`.
+- Approved implementation target: Spark `3.5.9` no-Hadoop distribution, Hadoop `3.3.6`, Java 11 (Temurin `11.0.32+9`), and CPython `3.10.21`. All four versions were observed in the deployed runtime, including Python in `spark-client` and both NodeManager environments.
+- Infrastructure implementation status: Docker/Compose configuration, Windows PowerShell 5.1-safe host invocation, bounded readiness checks, Java infrastructure smoke tooling, environment snapshot schemas, and machine-readable infrastructure-only evidence bundling are implemented. Static/PowerShell regression checks pass.
+- Runtime verification session `LOCAL_YARN_V1_20260824T073936243Z_7cb92321` produced an internally `COMPLETE` infrastructure-only bundle and resolved snapshot `LOCAL_YARN_V1_SNAPSHOT_20260824T074804856Z_de925815`. Two DataNodes and two NodeManagers registered. Application `application_1787557265990_0001` finished `SUCCEEDED`, and the same ID was correlated across YARN, Spark History Server, and the HDFS event log. Host/Docker-VM `pswpin` and `pswpout` deltas were both zero; every observed running service cgroup reported swap current/peak/max `0`. Windows pagefile current usage rose from 3555 MB to 3768 MB while available host RAM fell from about 1721 MB to 1396 MB; this records capacity pressure but does not prove paging I/O, and no background-load threshold has been approved. `COMPLETE` does not self-approve the environment: `LOCAL_YARN_V1` remains **PLANNED** pending human review.
 
 ## Approved Research Framing
 
@@ -79,9 +82,11 @@ Phase 1 must produce:
 
 ## Current Open Questions
 
-- Exact Spark 3.5.x patch version present in the benchmark runtime: **to be verified from the deployed environment**
-- Exact Hadoop/YARN 3.3.x patch version present in the benchmark runtime: **to be verified from the deployed environment**
-- Exact Java/Python versions and deployable image/distribution digest: **to be verified and assigned a `benchmark_environment_id`**
+- Runtime versions were observed as Spark `3.5.9`, Hadoop `3.3.6`, Java `11.0.32+9`, and CPython `3.10.21`; human review is still required before environment verification approval.
+- Final-session local OCI image descriptor/repo digest: `sha256:69d1b3114ff2a67e6196824999e53a3c1faf795622eac384b04987e014501d1b`; Docker-reported `linux/amd64` image manifest: `sha256:5902a010c834ec7a14c52dfd9b2fb0556b810d16dba9085859942d7713760a8e`.
+- Temurin registry descriptor: `sha256:bde5229117ab6dbd31a267132258ecbcae228658a8d22981c365585e95588356`; selected `linux/amd64` child manifest: `sha256:b9b1c3fe34d01379bbed0e68e366b3b465e2131043823d236badbb9b9d288cee`.
+- Active infrastructure decision: human review of the complete evidence bundle and resolved snapshot; the agent may not self-approve `LOCAL_YARN_V1`.
+- `LOCAL_YARN_V1`: **PLANNED**; `C1`: **TBD**; Data Gate: **NOT_APPROVED**.
 - Exact `C1` bootstrap values for executor count, executor cores, executor memory, memory overhead, driver/ApplicationMaster overhead, and shuffle partitions: **TBD until `LOCAL_YARN_V1` is VERIFIED**
 - Authentication/security requirements for real cluster APIs: **TBD**
 - Input data size source for all workload types: **TBD**
@@ -102,16 +107,9 @@ Phase 1 must produce:
 ## Next Milestone
 
 ```text
-Assign experiment_id = EXP_001
-  -> bootstrap local Spark-on-YARN environment
-  -> generate DATA_DEBUG_V1
-  -> resolve the TBD values of bootstrap configuration C1
-  -> spark-submit W03_JOIN_V1
-  -> obtain spark_application_id = application_...
-  -> collect and verify raw Spark History Server/YARN evidence
-  -> later normalize to execution_id = EXEC_...
+Human review of the COMPLETE LOCAL_YARN_V1 bundle and resolved snapshot
+  -> if approved, mark LOCAL_YARN_V1 VERIFIED
+  -> only after VERIFIED approval resolve C1 and begin EXP_001
 ```
 
-`EXP_001` is the experiment identity allocated before submission. It is not the Spark application ID or the canonical normalized execution ID. The Phase 1 milestone ends with traceable raw evidence; Phase 2 normalization later assigns `execution_id`.
-
-This bootstrap is a prerequisite for the Phase 1 end-to-end collector trace, not a new numbered phase and not the systematic Phase 3 benchmark. After the environment snapshot is **VERIFIED**, implement Phase 1 against `docs/raw_data_contract.md`. Do not proceed to full feature engineering until the Data Gate criteria in `docs/phases/phase_1_collection.md` pass.
+`application_1787557265990_0001` is infrastructure verification only. It is not `EXP_001`, benchmark evidence, ML data, or a canonical normalized execution. After the environment snapshot is **VERIFIED**, the human lead may resolve `C1` and authorize the Phase 1 bootstrap against `docs/raw_data_contract.md`. Do not proceed to `EXP_001`, data generation, collection, normalization, or feature engineering from this infrastructure task.

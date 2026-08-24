@@ -7,8 +7,9 @@ Research-oriented prototype for recommending Spark resource configurations from 
 - Current phase: Phase 1 — Historical Data Collection
 - Current gate: Data Gate — not yet approved
 - Local benchmark environment: `LOCAL_YARN_V1` — `PLANNED`
+- Infrastructure target: Spark `3.5.9`, Hadoop `3.3.6`, Java `11.0.32+9`, CPython `3.10.21`; the latest infrastructure-only evidence bundle is internally `COMPLETE` and awaits human environment review
 - Bootstrap configuration `C1`: numeric resource values remain `TBD` until the environment is `VERIFIED`
-- Next evidence target: `experiment_id = EXP_001` → `DATA_DEBUG_V1` → `W03_JOIN_V1` → `spark_application_id` → raw Spark History/YARN evidence → later `execution_id`
+- Next decision: human review of `LOCAL_YARN_V1`; only after `VERIFIED` approval resolve `C1` and authorize `EXP_001`
 
 See `PROJECT_STATE.md` for approved decisions, open questions, risks, and the current milestone.
 
@@ -67,7 +68,7 @@ The MVP does not provide autonomous production tuning, scheduler modification, d
 │   └── experiments/
 ├── docs/                 # requirements, contracts, phases, ADRs
 ├── infrastructure/
-│   └── docker/           # scaffold only until deployment is implemented
+│   └── docker/           # LOCAL_YARN_V1 implementation and verification tooling
 ├── src/
 │   ├── benchmark/
 │   │   ├── generation/
@@ -84,4 +85,9 @@ The MVP does not provide autonomous production tuning, scheduler modification, d
 └── tests/
 ```
 
-A Docker/bootstrap quickstart will be added only after the infrastructure has run successfully and the commands have been verified.
+The Docker/bootstrap commands are documented in `infrastructure/docker/README.md`.
+The container build and Java infrastructure smoke executed successfully, including
+YARN/History/event-log correlation for `application_1787557265990_0001`, a no-swap
+host/runtime interval, and a resolved environment snapshot. Human review is still
+required; `LOCAL_YARN_V1` remains `PLANNED`, `C1` remains `TBD`, and the Data Gate
+remains `NOT_APPROVED`.

@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ai-resource-tuning/local-yarn-v1.host-observation.schema.json",
+  "title": "LOCAL_YARN_V1 host observation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evidence_classification",
+    "benchmark_environment_id",
+    "verification_id",
+    "phase",
+    "observed_at_utc",
+    "host_memory",
+    "cpu",
+    "pagefile",
+    "background_processes",
+    "docker",
+    "wsl"
+  ],
+  "properties": {
+    "schema_version": { "const": "local_yarn_host_observation_v1" },
+    "evidence_classification": { "const": "INFRASTRUCTURE_VERIFICATION_ONLY" },
+    "benchmark_environment_id": { "const": "LOCAL_YARN_V1" },
+    "verification_id": { "type": "string", "minLength": 1 },
+    "phase": { "enum": ["HOST_BASELINE", "CLUSTER_IDLE", "POST_SMOKE"] },
+    "observed_at_utc": { "type": "string", "format": "date-time" },
+    "host_memory": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["total_physical_memory_bytes", "available_memory_bytes"],
+      "properties": {
+        "total_physical_memory_bytes": { "type": "integer", "minimum": 0 },
+        "available_memory_bytes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cpu": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "pagefile": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "background_processes": {
+      "type": "array",
+      "items": { "type": "object" }
+    },
+    "docker": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "wsl": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    }
+  }
+}

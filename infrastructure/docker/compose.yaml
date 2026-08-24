@@ -1,0 +1,209 @@
+name: ${COMPOSE_PROJECT_NAME:-local-yarn-v1}
+
+x-runtime: &runtime
+  image: ${LOCAL_YARN_IMAGE:-ai-resource-tuning/local-yarn:spark-3.5.9-hadoop-3.3.6-java11-python3.10.21}
+  build:
+    context: .
+    dockerfile: Dockerfile
+    args:
+      JAVA_BASE_IMAGE: ${JAVA_BASE_IMAGE:-eclipse-temurin:11.0.32_9-jdk-jammy}
+      JAVA_BASE_IMAGE_SOURCE: ${JAVA_BASE_IMAGE_SOURCE:-eclipse-temurin:11.0.32_9-jdk-jammy}
+      HADOOP_VERSION: "3.3.6"
+      HADOOP_SHA512: de3eaca2e0517e4b569a88b63c89fae19cb8ac6c01ff990f1ff8f0cc0f3128c8e8a23db01577ca562a0e0bb1b4a3889f8c74384e609cd55e537aada3dcaa9f8a
+      SPARK_VERSION: "3.5.9"
+      SPARK_SHA512: 0ceafdcc46dff83272edbbe5a9a52c77e2c2c55672f67deaa33751e52e5e3ae13e3fc2c5deddec88d172a488cf8baa6c85cc0d2e88333217fdefccb303beda75
+      PYTHON_VERSION: "3.10.21"
+      PYTHON_SHA256: a0da1e72132e950154eca0f6f47d5db828454700de20e5113667940d81e0db04
+  environment:
+    TZ: ${LOCAL_YARN_TIMEZONE:-Asia/Bangkok}
+    LANG: C.UTF-8
+  networks:
+    - local-yarn-v1
+  init: true
+  restart: "no"
+
+services:
+  namenode:
+    <<: *runtime
+    hostname: namenode
+    command: ["namenode"]
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 0.50
+    ports:
+      - "127.0.0.1:${NAMENODE_UI_PORT:-9870}:9870"
+    volumes:
+      - namenode-data:/data/dfs/name
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-hdfs.sh", "namenode"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  datanode-1:
+    <<: *runtime
+    hostname: datanode-1
+    command: ["datanode"]
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 0.50
+    volumes:
+      - datanode-1-data:/data/dfs/data
+    depends_on:
+      namenode:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-hdfs.sh", "datanode"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  datanode-2:
+    <<: *runtime
+    hostname: datanode-2
+    command: ["datanode"]
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 0.50
+    volumes:
+      - datanode-2-data:/data/dfs/data
+    depends_on:
+      namenode:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-hdfs.sh", "datanode"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 15s
+
+  hdfs-init:
+    <<: *runtime
+    hostname: hdfs-init
+    command: ["hdfs-init"]
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 0.50
+    depends_on:
+      namenode:
+        condition: service_healthy
+      datanode-1:
+        condition: service_healthy
+      datanode-2:
+        condition: service_healthy
+
+  resourcemanager:
+    <<: *runtime
+    hostname: resourcemanager
+    command: ["resourcemanager"]
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 0.50
+    ports:
+      - "127.0.0.1:${RESOURCE_MANAGER_UI_PORT:-8088}:8088"
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-yarn.sh", "resourcemanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  nodemanager-1:
+    <<: *runtime
+    hostname: nodemanager-1
+    command: ["nodemanager"]
+    mem_limit: 2816m
+    memswap_limit: 2816m
+    cpus: 2.00
+    environment:
+      TZ: ${LOCAL_YARN_TIMEZONE:-Asia/Bangkok}
+      LANG: C.UTF-8
+      NM_HOSTNAME: nodemanager-1
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+      hdfs-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-yarn.sh", "nodemanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  nodemanager-2:
+    <<: *runtime
+    hostname: nodemanager-2
+    command: ["nodemanager"]
+    mem_limit: 2816m
+    memswap_limit: 2816m
+    cpus: 2.00
+    environment:
+      TZ: ${LOCAL_YARN_TIMEZONE:-Asia/Bangkok}
+      LANG: C.UTF-8
+      NM_HOSTNAME: nodemanager-2
+    depends_on:
+      resourcemanager:
+        condition: service_healthy
+      hdfs-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-yarn.sh", "nodemanager"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  history-server:
+    <<: *runtime
+    hostname: history-server
+    command: ["history-server"]
+    mem_limit: 640m
+    memswap_limit: 640m
+    cpus: 0.50
+    ports:
+      - "127.0.0.1:${HISTORY_SERVER_UI_PORT:-18080}:18080"
+    depends_on:
+      hdfs-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "/opt/local-yarn/bin/healthcheck-history.sh"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+
+  spark-client:
+    <<: *runtime
+    hostname: spark-client
+    command: ["spark-client"]
+    mem_limit: 640m
+    memswap_limit: 640m
+    cpus: 1.00
+    profiles: ["tools"]
+    depends_on:
+      hdfs-init:
+        condition: service_completed_successfully
+      resourcemanager:
+        condition: service_healthy
+      nodemanager-1:
+        condition: service_healthy
+      nodemanager-2:
+        condition: service_healthy
+      history-server:
+        condition: service_healthy
+
+networks:
+  local-yarn-v1:
+    name: local-yarn-v1
+    driver: bridge
+
+volumes:
+  namenode-data:
+    name: local-yarn-v1-namenode-data
+  datanode-1-data:
+    name: local-yarn-v1-datanode-1-data
+  datanode-2-data:
+    name: local-yarn-v1-datanode-2-data

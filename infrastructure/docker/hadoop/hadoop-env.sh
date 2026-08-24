@@ -1,0 +1,9 @@
+export JAVA_HOME=/opt/java/openjdk
+export HADOOP_HOME=/opt/hadoop
+export HADOOP_CONF_DIR=/opt/hadoop/etc/hadoop
+export HDFS_NAMENODE_OPTS="-Xms128m -Xmx256m ${HDFS_NAMENODE_OPTS:-}"
+export HDFS_DATANODE_OPTS="-Xms128m -Xmx256m ${HDFS_DATANODE_OPTS:-}"
+export YARN_RESOURCEMANAGER_HEAPSIZE=256
+export YARN_NODEMANAGER_HEAPSIZE=256
+export HADOOP_CLIENT_OPTS="-Xms64m -Xmx256m ${HADOOP_CLIENT_OPTS:-}"
+
