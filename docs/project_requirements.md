@@ -40,7 +40,7 @@ The project is about resource recommendation from execution history. It is not a
 |---|---|---|---|
 | `REQ-01` | Collect execution evidence from Spark History Server, Spark event logs/listener-derived events where needed, and YARN ResourceManager. | CORE | Exact endpoints and fields must match the Spark/Hadoop versions actually used. Raw payloads remain immutable. |
 | `REQ-02` | Extract input size/partitions, stage/task counts, shuffle read/write, skew, peak memory, utilization, runtime, status, spill/OOM evidence, and the resource configuration used. | CORE | Same-run outcomes are post-run observations, not pre-submit inputs for that same execution. Unavailable metrics remain explicitly missing. |
-| `REQ-03` | Build a historical dataset from authorized company executions or diverse, clearly labeled benchmark/simulated workloads. | CORE | Real-company and benchmark data must never be presented as the same source. Coverage matters more than an arbitrary row count. |
+| `REQ-03` | Build a historical dataset from authorized company executions or diverse, clearly labeled benchmark/simulated workloads. | CORE | The approved MVP controlled source is a non-official TPC-DS-based benchmark under ADR-0004. Real-company, benchmark, and official TPC results must never be presented as the same source. Coverage matters more than an arbitrary row count. |
 | `REQ-04` | Learn execution performance from workload/history/configuration inputs. | CORE | The approved MVP target is runtime prediction. Resource cost is derived from candidate resources and predicted runtime where valid. |
 | `REQ-05` | Account for utilization, spill, OOM, and failure risk. | CONDITIONAL | Collect and report observed evidence where the source provides it. Train a reliability model only if label quality/volume is sufficient; otherwise use a transparent rule-based estimator and document the limitation. |
 | `REQ-06` | Evaluate a direct configuration recommendation approach. | CORE | A transparent direct heuristic recommender satisfies the required first approach and is a mandatory baseline. Direct config regression remains a `SECONDARY` comparison because reliable “optimal config” labels may not exist. |
@@ -63,7 +63,7 @@ The project is about resource recommendation from execution history. It is not a
 |---|---|---|
 | Runtime degradation guardrail and reliability threshold | Determines which Pareto candidate may be recommended. | Recommendation Gate |
 
-Accepted scope decisions are recorded in `docs/adr/ADR-0001-mvp-runtime-and-scope.md` and `docs/adr/ADR-0002-parallel-sql-boundary.md`.
+Accepted scope decisions are recorded in `docs/adr/ADR-0001-mvp-runtime-and-scope.md` through `docs/adr/ADR-0004-adopt-tpc-ds-as-controlled-benchmark-foundation.md`.
 
 Record decisions in `PROJECT_STATE.md`. Create an ADR when a decision changes architecture, schema meaning, feature availability, evaluation, model formulation, or recommendation policy.
 

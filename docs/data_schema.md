@@ -17,7 +17,7 @@ Required canonical fields:
 | `spark_application_id` | string | yes | Spark app ID | Spark/YARN | Primary cross-source correlation key |
 | `application_attempt_id` | string/null | no | YARN attempt ID | YARN | Needed for retries/attempts |
 | `job_family_id` | string/null | no | project-defined | derived/manual | Stable workload family, not execution ID |
-| `workload_id` | string/null | yes for benchmark runs | catalog ID | experiment | e.g. `W03_JOIN_V1`; do not infer from app name |
+| `workload_id` | string/null | yes for benchmark runs | catalog ID | experiment | e.g. `W03_TPCDS_JOIN`; keep `workload_version` separate and do not infer from app name |
 | `workload_version` | string/null | yes for benchmark runs | version | experiment | Logical workload definition version |
 | `dataset_id` | string/null | yes for benchmark runs | dataset ID | dataset manifest | Stable materialized input identity |
 | `dataset_version` | string/null | yes for benchmark runs | version | dataset manifest | Materialized dataset contract/version |

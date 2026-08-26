@@ -12,11 +12,11 @@ This prerequisite does **not** change phase numbering. It creates the minimum re
 - [ ] HDFS is accessible.
 - [ ] Spark History Server is accessible and event logging is configured.
 - [ ] YARN ResourceManager evidence is accessible.
-- [ ] One versioned debug synthetic dataset exists (`DATA_DEBUG_V1`).
-- [ ] One versioned Spark workload exists (`W03_JOIN_V1`).
+- [ ] One TPC-DS-based controlled debug dataset exists (`dataset_id = TPCDS_DEBUG`, `dataset_version = 1`).
+- [ ] One reviewed TPC-DS-derived Spark workload exists (`workload_id = W03_TPCDS_JOIN`, `workload_version = 1`).
 - [ ] One Spark application can complete and return a Spark application ID.
 
-The bootstrap experiment is assigned `experiment_id = EXP_001` before submission. Spark/YARN then supplies `spark_application_id`; Phase 1 preserves the corresponding raw evidence. Phase 2 normalization later assigns the canonical `execution_id`. One to five bootstrap executions may be used to resolve environment or collection issues. They are collector fixtures/evidence, not Dataset Gate coverage.
+The bootstrap experiment is assigned `experiment_id = EXP_001` before submission and binds `LOCAL_YARN_V1`, `TPCDS_DEBUG` version `1`, `W03_TPCDS_JOIN` version `1`, and the human-approved `C1`. Spark/YARN then supplies `spark_application_id`; Phase 1 preserves the corresponding raw evidence. Phase 2 normalization later assigns the canonical `execution_id`. One to five bootstrap executions may be used to resolve environment or collection issues. They are collector fixtures/evidence, not Dataset Gate coverage. This phase contract does not authorize the build/generation/materialization steps or `EXP_001`; follow `docs/tpcds_implementation_plan.md` first.
 
 ## Scope
 

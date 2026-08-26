@@ -7,12 +7,15 @@ This repository uses **docs-as-code**: architectural, data, ML, and evaluation d
 - `project_requirements.md` — stable project requirements, requirement disposition, acceptance evidence, and scope-change rules.
 - `architecture.md` — system boundaries, components, data flow, and non-goals.
 - `benchmark_environment.md` — planned and verified local Spark-on-YARN topology, capacity snapshot, and limitations.
-- `synthetic_data_spec.md` — deterministic synthetic domain, generator parameters, materialization, and dataset identity.
-- `workload_catalog.md` — versioned executable Spark workload definitions and controlled settings.
+- `local_yarn_v1_human_review_packet.md` — evidence review and the 2026-08-25 Human Tech Lead decision verifying the exact `LOCAL_YARN_V1` session/snapshot.
+- `phase_1_contract_consolidation_review_packet.md` — pending Human decisions for repository/evidence durability and unresolved Phase 1 execution, target, temporal, family, metric, concurrency, and diagnostic semantics.
+- `benchmark_data_spec.md` — TPC-DS-based generation, raw/materialized lineage, selected tables, and dataset identity.
+- `workload_catalog.md` — planned versioned Spark workload definitions and controlled settings; no workload is implemented yet.
 - `raw_data_contract.md` — immutable collector artifact manifest, integrity, identity, and evolution rules.
 - `data_schema.md` — raw/normalized execution data contract.
 - `feature_schema.md` — feature availability, units, lineage, and leakage rules.
 - `benchmark_plan.md` — reproducible workload/config experiment design.
+- `tpcds_implementation_plan.md` — read-only toolkit audit, licensing/hygiene concerns, integration options, and independently reviewed future steps.
 - `evaluation_protocol.md` — baselines, split strategy, metrics, test freeze, and final acceptance rules.
 - `engineering_standards.md` — repository conventions, versioning, configuration, logging, dependency discipline.
 - `metric_catalog.md` — canonical metric definitions and formulas.
@@ -33,6 +36,7 @@ This repository uses **docs-as-code**: architectural, data, ML, and evaluation d
 - `adr/ADR-0001-mvp-runtime-and-scope.md` — approved Spark-on-YARN runtime and MVP operational boundaries.
 - `adr/ADR-0002-parallel-sql-boundary.md` — approved within-application SQL concurrency boundary.
 - `adr/ADR-0003-local-benchmark-environment-and-bootstrap.md` — approved local benchmark subsystem, bootstrap, and transfer boundary.
+- `adr/ADR-0004-adopt-tpc-ds-as-controlled-benchmark-foundation.md` — approved migration from the custom ecommerce foundation to a non-official TPC-DS-based controlled benchmark. ADR-0003 remains unchanged historical evidence; ADR-0004 supersedes only its old dataset/workload foundation and identifiers.
 
 ## Documentation Rules
 

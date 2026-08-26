@@ -8,6 +8,9 @@ $dockerfile = Join-Path $repositoryRoot 'infrastructure\docker\Dockerfile'
 $sparkDefaults = Join-Path $repositoryRoot 'infrastructure\docker\spark\spark-defaults.conf'
 $sparkEnvironment = Join-Path $repositoryRoot 'infrastructure\docker\spark\spark-env.sh'
 $javaSmoke = Join-Path $repositoryRoot 'infrastructure\docker\smoke\src\main\java\localyarn\LocalYarnSmoke.java'
+$javaObservability = Join-Path $repositoryRoot 'infrastructure\docker\observability\src\main\java\localyarn\LocalYarnObservability.java'
+$observabilityRunner = Join-Path $repositoryRoot 'infrastructure\docker\observability\run-observability-test.sh'
+$observabilityHost = Join-Path $repositoryRoot 'infrastructure\docker\host\run-observability-test.ps1'
 $startScript = Join-Path $repositoryRoot 'infrastructure\docker\host\start.ps1'
 $verifyScript = Join-Path $repositoryRoot 'infrastructure\docker\host\verify.ps1'
 $snapshotScript = Join-Path $repositoryRoot 'infrastructure\docker\host\snapshot-environment.ps1'
@@ -68,6 +71,12 @@ $composeText = Get-Content -LiteralPath $composeFile -Raw
 $sparkText = Get-Content -LiteralPath $sparkDefaults -Raw
 $sparkEnvironmentText = Get-Content -LiteralPath $sparkEnvironment -Raw
 $smokeText = Get-Content -LiteralPath $javaSmoke -Raw
+Assert-True (Test-Path -LiteralPath $javaObservability) 'Missing Java infrastructure observability job.'
+Assert-True (Test-Path -LiteralPath $observabilityRunner) 'Missing infrastructure observability runner.'
+Assert-True (Test-Path -LiteralPath $observabilityHost) 'Missing Windows observability launcher.'
+$observabilityText = Get-Content -LiteralPath $javaObservability -Raw
+$observabilityRunnerText = Get-Content -LiteralPath $observabilityRunner -Raw
+$observabilityHostText = Get-Content -LiteralPath $observabilityHost -Raw
 $startText = Get-Content -LiteralPath $startScript -Raw
 $verifyText = Get-Content -LiteralPath $verifyScript -Raw
 $snapshotText = Get-Content -LiteralPath $snapshotScript -Raw
@@ -134,6 +143,29 @@ Assert-True ($sparkText -match 'spark\.sql\.adaptive\.enabled\s+false') 'AQE mus
 Assert-True ($sparkText -match 'spark\.pyspark\.python\s+/opt/python/bin/python3\.10') 'Pinned Python is not configured for PySpark.'
 Assert-True ($smokeText -match 'INFRASTRUCTURE_SMOKE') 'Smoke application is not explicitly infrastructure-only.'
 Assert-True ($smokeText -notmatch 'EXP_001|W03_JOIN_V1|DATA_DEBUG_V1') 'Smoke application crosses the approved task boundary.'
+Assert-True ($observabilityText -match 'INFRASTRUCTURE_OBSERVABILITY_ONLY') 'Observability job lacks an infrastructure-only classification.'
+Assert-True (($observabilityText + $observabilityRunnerText) -notmatch 'EXP_001|W03_JOIN_V1|DATA_DEBUG_V1') 'Observability tooling crosses the approved task boundary.'
+Assert-True ($observabilityText -match 'NOT_BENCHMARK' -and $observabilityText -match 'NOT_ML_DATA') 'Observability job does not reject benchmark/ML interpretation.'
+Assert-True ($observabilityText -match 'MIN_OBSERVATION_SECONDS = 30' -and $observabilityText -match 'MAX_OBSERVATION_SECONDS = 600') 'Java observability window is not explicitly bounded.'
+Assert-True ($observabilityRunnerText -match 'min_observation_seconds=30' -and $observabilityRunnerText -match 'max_observation_seconds=600') 'Shell observability window is not explicitly bounded.'
+Assert-True ($observabilityRunnerText -match 'application_poll_attempts=120' -and $observabilityRunnerText -match 'history_poll_attempts=60') 'Observability API polling is not explicitly bounded.'
+Assert-True ($observabilityRunnerText -match 'history_validation_timeout_seconds=180' -and $observabilityRunnerText -match 'SECONDS < history_validation_deadline') 'Semantic History REST validation does not have a shared bounded deadline.'
+Assert-True ($observabilityRunnerText -match 'spark\.dynamicAllocation\.enabled=false') 'Observability job must keep dynamic allocation disabled.'
+Assert-True ($observabilityRunnerText -match 'spark\.sql\.adaptive\.enabled=false') 'Observability job must keep AQE disabled.'
+Assert-True ($observabilityRunnerText -match 'spark\.ui\.prometheus\.enabled=true') 'Observability job does not expose the executor Prometheus endpoint.'
+Assert-True ($observabilityRunnerText -match 'prometheus_samples=' -and $observabilityRunnerText -match 'worker_executor_ids=' -and $observabilityRunnerText -match 'prometheus_worker_executors') 'Observability runner does not correlate non-comment Prometheus samples with observed worker executors.'
+Assert-True ($observabilityRunnerText -match 'spark\.eventLog\.logStageExecutorMetrics=true') 'Observability job does not preserve per-stage executor metrics in its event log.'
+Assert-True ($observabilityRunnerText -match 'spark\.ui\.killEnabled=false') 'Observability UI still exposes destructive kill controls.'
+Assert-True ($observabilityRunnerText -match 'OBSERVED_APPLICATION_ID=' -and $observabilityRunnerText -match 'OBSERVABILITY_TEST_RESULT=PASS') 'Observability runner does not report an observed application ID and final result.'
+Assert-True ($observabilityRunnerText -match 'live_spark_application_key="\$\{application_id\}"') 'Live Spark REST must use the base application ID observed from this Spark 3.5.9 YARN runtime.'
+Assert-True ($observabilityRunnerText -match 'live_yarn_state.*RUNNING' -and $observabilityRunnerText -match 'live_application_incomplete.*true') 'Live metrics are not correlated with an incomplete RUNNING YARN application.'
+Assert-True ($observabilityRunnerText -match 'history_api_base="\$\{history_internal_base\}/api/v1/applications/\$\{application_id\}/\$\{history_attempt_id\}"') 'History REST must use the observed attempt-aware application key.'
+Assert-True ($dockerText -notmatch 'LocalYarnObservability|local-yarn-observability') 'Observability code must not alter the formally snapshotted runtime image.'
+Assert-True ($observabilityHostText -match ':ro"' -and $observabilityHostText -match '--no-deps') 'Observability source must be mounted read-only without restarting Compose dependencies.'
+Assert-True ($observabilityHostText -match "status -ne 'COMPLETE'") 'Observability launcher can contaminate an incomplete formal verification session.'
+Assert-True ($observabilityHostText -match 'Enter-LocalYarnVerificationLock' -and $observabilityHostText -match '(?s)finally\s*\{\s*Exit-LocalYarnVerificationLock') 'Observability launcher is outside the LOCAL_YARN_V1 lifecycle lock.'
+Assert-True ($observabilityHostText -match 'runtime-evidence\.ps1' -and $observabilityHostText -match 'service_images_final\.json') 'Observability launcher is not bound to the completed runtime evidence.'
+Assert-True ($observabilityHostText -match 'Get-LocalYarnServiceImageEvidence' -and $observabilityHostText -match 'container_id' -and $observabilityHostText -match 'actual_image_id' -and $observabilityHostText -match 'started_at') 'Observability launcher does not compare current container/image identities with completed evidence.'
 Assert-True (([regex]::Matches($composeText, '127\.0\.0\.1:')).Count -eq 3) 'Exactly three loopback-only UI ports are required.'
 Assert-True (([regex]::Matches($composeText, '(?m)^\s+memswap_limit:\s+')).Count -eq 9) 'Every daemon/tool service must prohibit cgroup swap by setting memswap_limit equal to mem_limit.'
 Assert-True ($composeText -match 'namenode-data' -and $composeText -match 'datanode-1-data' -and $composeText -match 'datanode-2-data') 'Required persistent HDFS volumes are missing.'
@@ -317,8 +349,11 @@ $combinedHostTooling = $startText + "`n" + $verifyText + "`n" + $snapshotText
 foreach ($requiredPhase in @('HOST_BASELINE', 'CLUSTER_IDLE', 'POST_SMOKE')) {
     Assert-True ($combinedHostTooling -match $requiredPhase) "Host tooling does not capture $requiredPhase."
 }
-Assert-True ($stateText -match 'Status:\s+\*\*PLANNED\*\*') 'LOCAL_YARN_V1 must remain PLANNED before human review.'
+Assert-True ($stateText -match 'Environment status:\s+`LOCAL_YARN_V1`\s+=\s+\*\*VERIFIED\*\*') 'PROJECT_STATE does not record the Human-approved LOCAL_YARN_V1 VERIFIED state.'
+Assert-True ($stateText -match 'LOCAL_YARN_V1_20260824T073936243Z_7cb92321' -and $stateText -match 'LOCAL_YARN_V1_SNAPSHOT_20260824T074804856Z_de925815') 'PROJECT_STATE does not preserve the approved verification session and snapshot IDs.'
 Assert-True ($stateText -match 'Exact `C1` bootstrap values.*\*\*TBD') 'C1 must remain TBD.'
+Assert-True ($stateText -match 'Data Gate:\s+\*\*NOT_APPROVED\*\*') 'Data Gate must remain NOT_APPROVED.'
+Assert-True ($stateText -match '`UNVERIFIED_LEGACY`.*sha256:5902a010c834ec7a14c52dfd9b2fb0556b810d16dba9085859942d7713760a8e') 'Unsupported legacy digest is not explicitly excluded from verified evidence.'
 
 $composeConfigResult = Invoke-NativeCommand -FilePath 'docker' -ArgumentList @(
     'compose', '--env-file', $EnvFile, '-f', $composeFile, 'config', '--quiet'

@@ -13,10 +13,14 @@ The design intentionally favors a modular monolith/data pipeline over microservi
                            |
              +-------------+-------------+
              |                           |
-  Synthetic Dataset Generator      Experiment Specs
+  TPC-DS toolkit + dsdgen          Experiment Specs
+             |                           |
+             v                           |
+  Immutable Raw Generated Data            |
              |                           |
              v                           v
-            HDFS                  Experiment Runner
+ Controlled Parquet/Snappy          Experiment Runner
+ Materialization on HDFS
              |                           |
              +-------------+-------------+
                            v
@@ -72,7 +76,7 @@ The design intentionally favors a modular monolith/data pipeline over microservi
                        Real Spark Validation
 ```
 
-The local benchmark system is a **data-generation subsystem** for research evidence. It is not part of the production recommendation path. Future authorized company executions enter through the same collection/data-contract boundary; they do not need to use the local synthetic generator or experiment runner.
+The local benchmark system is a **data-generation subsystem** for research evidence. It is a TPC-DS-based controlled benchmark, not an official complete TPC-DS benchmark or part of the production recommendation path. Future authorized company executions enter through the same collection/data-contract boundary; they do not need to use the local TPC-DS generation/materialization path or experiment runner.
 
 ## 3. Component Boundaries
 
@@ -80,7 +84,9 @@ The local benchmark system is a **data-generation subsystem** for research evide
 
 Responsibilities:
 
-- materialize deterministic synthetic datasets in HDFS from versioned generator specifications;
+- build and invoke a pinned, reviewed `dsdgen` integration;
+- preserve raw generated data and generator lineage immutably;
+- materialize selected, versioned TPC-DS-derived tables as Parquet/Snappy in HDFS;
 - execute versioned Spark workloads from explicit experiment specifications;
 - submit controlled static-allocation configurations to the local Spark-on-YARN environment;
 - record experiment, dataset, workload, environment, seed, configuration, and repeat lineage;
@@ -89,11 +95,12 @@ Responsibilities:
 Non-responsibilities:
 
 - fabricating Spark/YARN metrics or outcomes;
+- claiming an official complete TPC-DS benchmark or official TPC results;
 - emulating a production cluster;
 - collecting or normalizing source evidence;
 - making model or recommendation decisions.
 
-The bootstrap path creates the first one to five executions needed to prove the Phase 1 collector path. Phase 3 later uses the same subsystem for systematic dataset generation. See `benchmark_environment.md`, `synthetic_data_spec.md`, `workload_catalog.md`, and `adr/ADR-0003-local-benchmark-environment-and-bootstrap.md`.
+The bootstrap path creates the first one to five executions needed to prove the Phase 1 collector path. Phase 3 later uses the same subsystem for systematic dataset generation. See `benchmark_environment.md`, `benchmark_data_spec.md`, `workload_catalog.md`, `tpcds_implementation_plan.md`, ADR-0003 for the preserved local-environment/bootstrap decision, and ADR-0004 for the current benchmark foundation.
 
 ### 3.2 Collection Layer
 
@@ -218,12 +225,12 @@ The approved MVP compatibility family is Spark 3.5.x with Hadoop/YARN 3.3.x on S
 
 ## 7. MVP Operational Boundaries
 
-- Synthetic benchmark workloads are executed on Spark-on-YARN and remain explicitly labeled as non-production evidence.
+- TPC-DS-derived benchmark workloads are executed on Spark-on-YARN and remain explicitly labeled as non-production, non-official TPC evidence.
 - Static allocation is the supported recommendation mode.
 - The feedback loop is explicit offline collection, dataset rebuild/versioning, retraining, validation, and model promotion.
 - Waste/shortage warnings are post-run diagnostics; live warnings are outside the MVP.
 - Parallel SQL means overlapping SQL executions/stages within one Spark application, as defined by `adr/ADR-0002-parallel-sql-boundary.md`.
-- `LOCAL_YARN_V1` is a single-host, two-NodeManager controlled testbed. Its planned resource envelope is not frozen until verified against the deployed runtime.
+- `LOCAL_YARN_V1` is a verified single-host, two-NodeManager controlled testbed for the exact Human-approved snapshot. Its advertised YARN capacity is verified, while benchmark-usable dataset scale and resource bounds remain subject to controlled calibration.
 - Local recommendations are environment-specific; transfer to a company/production environment requires target-environment collection and retraining or explicit calibration.
 
 ## 8. Failure Handling
