@@ -16,6 +16,7 @@ This repository uses **docs-as-code**: architectural, data, ML, and evaluation d
 - `feature_schema.md` — feature availability, units, lineage, and leakage rules.
 - `benchmark_plan.md` — reproducible workload/config experiment design.
 - `tpcds_implementation_plan.md` — read-only toolkit audit, licensing/hygiene concerns, integration options, and independently reviewed future steps.
+- `tpcds_toolkit_integration_review_packet.md` — P04A toolkit provenance/licensing/hygiene audit, option comparison, proposed strategy, and P04B decision contract; pending Human decision.
 - `evaluation_protocol.md` — baselines, split strategy, metrics, test freeze, and final acceptance rules.
 - `engineering_standards.md` — repository conventions, versioning, configuration, logging, dependency discipline.
 - `metric_catalog.md` — canonical metric definitions and formulas.
