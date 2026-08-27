@@ -14,6 +14,10 @@
 ## Local Benchmark Strategy
 
 - Benchmark strategy implementation status: **PLANNED / NOT_STARTED**
+- Toolkit integration decision: **Option B — external/pinned upstream acquisition**, Human-approved on `2026-08-27` for TPC-DS Tools / DSGen `4.0.0`.
+- Canonical local toolkit input: `.local/tpcds/BBC82A1E-AE00-4C0B-9255-EBAF6CA0972B-TPC-DS-Tool.zip`; observed size `7,479,651` bytes and locally calculated SHA-256 `d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d`. This digest is a local artifact identity, not a publisher-authenticated checksum.
+- Active-tree toolkit disposition: the Human-approved removal of `B0CF2ADA-2F20-4296-A89C-81B8202DCD13-TPC-DS-Tool/` removes the prior extracted copy from the active repository tree. Existing Git history is preserved; no history rewrite is authorized.
+- P04B build contract: **FROZEN / NOT_STARTED** in `docs/tpcds_toolkit_integration_review_packet.md`. Toolkit extraction/build, `dsdgen`, `tpcds.idx`, and dataset generation remain **NOT_STARTED**.
 - Environment status: `LOCAL_YARN_V1` = **VERIFIED**
 - Host: personal workstation with **16 GB physical RAM**; the approved infrastructure bundle observed an Intel Core i5-12450H with 8 physical cores / 12 logical processors.
 - Logical topology: **two YARN NodeManagers on one physical host**.
@@ -108,7 +112,8 @@ Phase 1 must produce:
 - Phase/component ownership for within-application concurrency and evidence-backed post-run diagnostics: **TBD / human approval required**.
 - Exact `C1` bootstrap values for executor count, executor cores, executor memory, memory overhead, driver/ApplicationMaster overhead, and shuffle partitions: **TBD**. Environment verification is satisfied, but `C1` still requires a separate conservative configuration review and Human approval.
 - Before systematic benchmark experiments, a separate Human-reviewed calibration step must validate usable dataset scale, usable resource envelope, host memory pressure, swap/paging behavior, repeat-run variability, and background-load/noise controls. This calibration is not performed or approved by P03.
-- TPC-DS toolkit provenance/licensing/repository-hygiene disposition and integration option: **TBD / human review required before build**.
+- TPC-DS Option B integration and active-tree disposition are approved. Exact P04B builder image/digest, compiler/Make/flex-or-lex/bison-or-yacc/libc versions, allowlisted build command, extracted-source manifest identity, runtime-support closure, and output hashes remain **TBD / fail-closed until resolved under the frozen P04B contract**.
+- Toolkit licensing/direct-control, licensee/acceptance evidence, historical public-Git redistribution, embedded third-party notices, export, hosted-CI/private-cache use, and binary/container distribution remain **HUMAN / LEGAL REVIEW REQUIRED**. Missing acquisition facts must not be reconstructed, and the local SHA-256 is not a publisher checksum.
 - Exact deterministic definition of `TPCDS_DEBUG`, raw generation scope/parameters, materialization schemas/partitioning/HDFS paths, and relationship checks: **TBD / human review required**.
 - Exact SQL/action/correctness contracts for the six planned workload-version-1 definitions: **TBD**; `W03_TPCDS_JOIN` must be reviewed first for bootstrap readiness.
 - Authentication/security requirements for real cluster APIs: **TBD**
@@ -127,7 +132,7 @@ Phase 1 must produce:
 - Docker VM memory and low host headroom can make otherwise scheduler-valid configurations unsafe under benchmark load.
 - TPC-DS-derived Spark-on-YARN results may not transfer directly to a differently sized or configured production cluster.
 - The selected-table/project-workload design is not an official complete TPC-DS benchmark and cannot support official TPC result comparisons.
-- The committed toolkit has unresolved upstream-provenance, redistribution/licensing, repository-hygiene, and reproducible-build concerns.
+- The old extracted toolkit is removed from the active tree under Human approval, but its bytes remain in unchanged Git history. Historical public redistribution, licensing, embedded-notice, and provenance concerns remain unresolved; Option B and the local archive identity do not retroactively authenticate those historical bytes.
 - `TPCDS_DEBUG` is not yet defined; assuming fractional scale, arbitrary sampling, target bytes, or preserved relationships would threaten reproducibility and validity.
 - The initial workload suite does not yet guarantee controlled skew coverage; any skew claim must be based on observed profiling/execution evidence.
 - Local recommendations are environment-specific. Production/company deployment requires collection and retraining or explicit calibration using execution history from the target environment.
@@ -148,8 +153,10 @@ Completed prerequisite A:
     -> C1 remains a separate TBD decision
 
 Remaining independent prerequisite B:
-  Review toolkit provenance/licensing/integration
-    -> approve reproducible build, TPCDS_DEBUG, materialization, and W03 contracts
+  Option B integration and active-tree cleanup decision -> APPROVED on 2026-08-27
+  P04B reproducible no-data build contract -> FROZEN / implementation NOT_STARTED
+    -> next implement the isolated dsdgen + tpcds.idx build and no-data verification
+    -> later approve TPCDS_DEBUG, materialization, and W03 contracts
 
 B + collector/bootstrap readiness + separately approved C1
   -> human review of the exact EXP_001 specification

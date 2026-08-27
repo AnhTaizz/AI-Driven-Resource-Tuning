@@ -4,13 +4,22 @@
 
 This is a future implementation plan only. P01 and the P03 environment-status transition authorize no toolkit cleanup, build, data generation, materialization, workload implementation, Spark submission, `C1` resolution, or `EXP_001` execution.
 
+On `2026-08-27`, the Human Tech Lead separately approved Option B external/pinned
+upstream acquisition, removal of the previously extracted toolkit from the active
+tree, and the frozen P04B no-data build contract in
+`docs/tpcds_toolkit_integration_review_packet.md`. Existing Git history remains
+unchanged and no history rewrite is authorized. Toolkit build and dataset
+generation remain `NOT_STARTED`.
+
 The plan migrates only the benchmark data/workload foundation. It does not redesign Spark-on-YARN infrastructure, collection, the execution-level data model, feature availability/leakage rules, ML formulation, evaluation, optimization, or recommendation policy.
 
 Each step below has an independent human review gate. Passing one gate does not approve later steps or any existing Research Gate.
 
-## 2. Read-Only Toolkit Inventory
+## 2. Historical Read-Only Toolkit Inventory
 
-The repository currently contains:
+The P01/P04A-reviewed Git revision contained the following tree. It is now
+intentionally removed from the active tree under Human approval but remains in
+unchanged Git history:
 
 ```text
 B0CF2ADA-2F20-4296-A89C-81B8202DCD13-TPC-DS-Tool/
@@ -47,7 +56,9 @@ These observations identify the committed bytes; they do not establish upstream 
 - Upstream tests contain hard-coded paths and potentially destructive database/filesystem commands; they must remain inert until isolated and reviewed.
 - No project-owned provenance/third-party notice connects the committed tree to an official archive.
 
-P01 deliberately does not clean, move, delete, or modify any of these files.
+P01 deliberately did not clean, move, delete, or modify any of these files. The
+later `2026-08-27` decision authorizes only active-tree removal; it does not make
+the historical tree canonical upstream provenance or authorize history rewriting.
 
 ## 3. Licensing and Result-Disclosure Considerations
 
@@ -61,7 +72,7 @@ This inventory is not legal advice. A human/legal review must decide whether con
 - state that project results are not comparable to official TPC Benchmark Results;
 - do not publish official TPC-DS metrics or claim official compliance.
 
-## 4. Future Integration Options
+## 4. Toolkit Integration Decision
 
 ### Option A — Use the current vendored source through an isolated build wrapper
 
@@ -75,13 +86,22 @@ Record the authoritative URL, version, acquisition date, archive hash/signature 
 
 Trade-off: clearer upstream provenance and a cleaner repository, but adds network/artifact-availability and license-acceptance dependencies.
 
+**Selected by the Human Tech Lead on `2026-08-27`.** The canonical retained input
+is `.local/tpcds/BBC82A1E-AE00-4C0B-9255-EBAF6CA0972B-TPC-DS-Tool.zip`, observed as
+`7,479,651` bytes with locally calculated SHA-256
+`d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d`.
+The checksum is not publisher-authenticated. The archive remains local, ignored,
+and untracked. Option A and Option C are not automatic fallbacks.
+
 ### Option C — Use a reproducibly built binary/container artifact
 
 Pin source, toolchain, build recipe, image digest, target architecture, and binary hash; store or retrieve the artifact only under an approved licensing/distribution process.
 
 Trade-off: repeatable execution environment, but highest packaging and redistribution-review burden.
 
-P01 does not select an option. The Human Tech Lead must approve one before build work starts.
+P01 did not select an option. The later Human decision selects Option B. Build
+work still requires a separately scoped P04B implementation task under the frozen
+contract and may not generate benchmark data.
 
 ## 5. Small-Step Implementation Sequence
 
@@ -97,6 +117,11 @@ Documentation/review only:
 
 **Review Gate T1:** Human approval of provenance, licensing disposition, integration option, and any repository mutation. No build before T1.
 
+**Decision update:** Option B and active-tree removal were Human-approved on
+`2026-08-27`; no history rewrite was authorized. Licensing, historical public
+redistribution, licensee/acceptance evidence, hosted-CI/cache use, and derived
+artifact distribution remain unresolved and must not be inferred as approved.
+
 ### Step 2 — Reproducible Build Contract
 
 Define without compiling:
@@ -109,9 +134,15 @@ Define without compiling:
 
 **Review Gate T2:** Human approval of the exact isolated build contract. No compilation before T2.
 
+**Decision update:** the P04B contract was Human-frozen on `2026-08-27` in
+`docs/tpcds_toolkit_integration_review_packet.md`. Exact builder/toolchain values,
+minimum target closure/build argv, extraction manifest identity, and output hashes
+remain fail-closed P04B TBDs because they must be selected or observed during the
+separate implementation task. No build was performed by this decision update.
+
 ### Step 3 — Isolated Build Integration and Evidence
 
-Implement only the T2-approved build path, keep upstream tests inert, verify the binary-reported version, run only the approved no-data checks, and capture every required runtime-artifact digest.
+Implement only the T2-approved build path, keep upstream tests inert, bind executable identity to the source/build manifest and binary digest, run only the approved no-data checks, and capture every required runtime-artifact digest. Do not invent or invoke a version flag; any future no-data version invocation requires source evidence and a Human-reviewed contract amendment.
 
 **Review Gate T3:** Reproducible build evidence and runtime artifact identities accepted. T3 does not authorize data generation.
 
@@ -203,9 +234,14 @@ T1–T3, D1/D2, M1/M2, W1–W4, and B1 are implementation review gates, not repl
 
 ## 7. Open Decisions
 
-- toolkit integration option and licensing disposition;
-- authorized provenance for the committed source;
-- whether/how the vendored tree may be cleaned or relocated;
+- toolkit integration option and active-tree disposition are resolved as Option B
+  with removal of the old extracted tree; existing history remains unchanged;
+- exact P04B builder image/digest, toolchain versions, minimum dependency closure,
+  allowlisted build command, extraction manifest, runtime support list, and output
+  identities remain bounded implementation-time TBDs;
+- licensing/direct-control, licensee/acceptance evidence, historical public-Git
+  redistribution and embedded notices, hosted CI/private archive cache, export,
+  and derived binary/container distribution remain Human/Legal decisions;
 - exact `TPCDS_DEBUG` derivation;
 - raw generation table scope and parameters;
 - materialization schemas, partitioning, HDFS paths, and correctness rules;

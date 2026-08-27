@@ -2,36 +2,53 @@
 
 - Task: `P04A` — TPC-DS Toolkit Integration Review Gate
 - Review date: `2026-08-26`
+- Human decision date: `2026-08-27`
 - Repository revision reviewed: `e174cbdea01806f5df51ad570e207d02743d3eb9`
-- Review status: **PENDING HUMAN DECISION**
-- Proposed strategy: **Option B — external/pinned upstream acquisition**
-- Fallback: **Option A — keep vendored source**, only under the conditions in section 12
+- Review status: **HUMAN APPROVED**
+- Selected strategy: **Option B — external/pinned upstream acquisition**
+- Active-tree disposition: **REMOVE THE PREVIOUSLY EXTRACTED TOOLKIT**; preserve existing Git history and perform no history rewrite
+- P04B contract status: **FROZEN / IMPLEMENTATION NOT_STARTED**
 
-This packet is decision support, not approval or implementation. It preserves the
-planning contracts in [ADR-0004](adr/ADR-0004-adopt-tpc-ds-as-controlled-benchmark-foundation.md)
+This packet began as decision support. It now also records the Human Tech Lead's
+Option B decision, approved active-tree cleanup, and frozen P04B build contract.
+It preserves the planning contracts in
+[ADR-0004](adr/ADR-0004-adopt-tpc-ds-as-controlled-benchmark-foundation.md)
 and the [TPC-DS implementation plan](tpcds_implementation_plan.md). No toolkit was
-built or executed, and no benchmark data was generated.
+extracted, built, or executed by this decision task, and no benchmark data was
+generated.
 
 ## 1. Current state
 
-- TPC-DS remains `PLANNED / NOT_STARTED`; the Data Gate remains `NOT_APPROVED`.
-- The repository contains an extracted third-party toolkit tree at
-  `B0CF2ADA-2F20-4296-A89C-81B8202DCD13-TPC-DS-Tool/`.
+- TPC-DS remains `PLANNED / NOT_STARTED`; toolkit build and dataset generation are
+  `NOT_STARTED`; the Data Gate remains `NOT_APPROVED`.
+- The Human approved Option B on `2026-08-27` and authorized removal of the
+  previously extracted third-party toolkit tree at
+  `B0CF2ADA-2F20-4296-A89C-81B8202DCD13-TPC-DS-Tool/` from the active tree.
+- The old toolkit remains in existing Git history. No history rewrite is authorized.
+- The canonical future P04B input is the local, ignored, untracked archive
+  `.local/tpcds/BBC82A1E-AE00-4C0B-9255-EBAF6CA0972B-TPC-DS-Tool.zip`, observed as
+  `7,479,651` bytes with locally calculated SHA-256
+  `d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d`.
+  This digest is not a publisher-authenticated checksum.
 - Project-owned benchmark generation, dataset, workload, and experiment directories
   contain placeholders only. No TPC-DS integration code exists.
 - No compiled generator, `tpcds.idx`, generated `.dat`, Parquet dataset, or
   implemented TPC-DS Spark workload was found.
-- The entire toolkit is tracked in Git. It is neither a submodule nor a Git LFS
-  object and has no explicit `third_party` or `vendor` boundary.
-- Git shows no toolkit changes after its introduction, but this establishes only
-  repository identity, not authenticity against an upstream archive.
+- Before the approved cleanup, the entire old toolkit was tracked in Git. It was
+  neither a submodule nor a Git LFS object and had no explicit `third_party` or
+  `vendor` boundary.
 
-The current tree must not be treated as an approved source, build, or project
-evidence until the Human and legal/governance decisions below are resolved.
+The historical tree must not be used as a P04B source or fallback. Option B does
+not authenticate the historical committed bytes, and the legal/governance
+limitations below remain unresolved.
 
-## 2. Toolkit inventory
+## 2. Historical toolkit inventory
 
 ### 2.1 Identity and contents
+
+The following inventory describes the P04A-reviewed Git tree that is now
+intentionally removed from the active tree. It remains historical Git evidence,
+not canonical Option B input.
 
 | Item | Observed evidence |
 |---|---|
@@ -153,12 +170,16 @@ compliant.
   credentials, and reference `/tmp`, `/data`, `~jms`, and hard-coded Windows paths.
   The test harness also contains missing/wrong-case script references.
 
-No cleanup is performed by P04A. Ignore rules alone would not untrack existing
-files.
+P04A itself performed no cleanup. On `2026-08-27`, the Human subsequently
+approved removing this extracted tree from the active repository tree. The
+cleanup does not rewrite or remove the toolkit from existing Git history.
 
-## 6. Build and reproducibility gaps
+## 6. Build and reproducibility gaps observed by P04A
 
-The repository currently has no approved project-owned contract for:
+At the original P04A review, the repository had no approved project-owned
+contract for the areas below. Section 14 now freezes the P04B control boundary.
+Values that can only be selected or observed during P04B remain explicitly TBD
+and must fail closed until resolved.
 
 | Area | Current gap |
 |---|---|
@@ -261,17 +282,18 @@ Option B's main weakness is acquisition/CI availability. It is still preferable
 because that weakness can be managed with a single approved retained archive,
 while Options A and C add unresolved public redistribution burdens.
 
-## 11. Recommended option — PROPOSED
+## 11. Selected option — HUMAN APPROVED
 
-Recommend exactly **Option B — external/pinned upstream acquisition** for
-AI-Driven Resource Tuning.
+The Human Tech Lead selected exactly **Option B — external/pinned upstream
+acquisition** for AI-Driven Resource Tuning on `2026-08-27`.
 
 This is the smallest reliable solution for the current local/research scope:
 
 1. it creates a truthful acquisition record rather than retroactively treating an
    unexplained Git tree as upstream-authenticated;
-2. it keeps third-party source, archives, binaries, and generated data out of the
-   main project history;
+2. it keeps the new local archive, future extracted source, binaries, and generated
+   data out of future tracked history; the old extracted bytes remain in existing
+   unchanged Git history;
 3. it supports Windows development through a small, separate pinned Linux Docker
    build without changing `LOCAL_YARN_V1`;
 4. it avoids the registry/artifact-management complexity of Option C;
@@ -283,12 +305,16 @@ The canonical acquisition should be Human-mediated. The future wrapper should
 accept a local archive path, verify it, and never download the toolkit or automate
 EULA acceptance.
 
-This recommendation is **PENDING HUMAN DECISION**. It is not approval to remove
-the current tree, acquire the archive, build anything, or publish artifacts.
+The Human also approved removal of the old extracted toolkit from the active tree
+and explicitly did not authorize a history rewrite. This decision freezes the
+P04B contract in section 14 but does not perform or prove a build and does not
+authorize publishing toolkit-derived artifacts.
 
-## 12. Fallback option
+## 12. Unselected fallback option
 
-Fallback to **Option A — keep vendored source** only if:
+Option A is not selected and P04B must not fall back to it. A future switch to
+**Option A — keep vendored source** would require a new explicit Human decision
+and all of the following:
 
 - official 4.0.0 reacquisition becomes unavailable or the approved project must
   support offline/CI use that cannot be served by a compliant retained archive;
@@ -306,42 +332,229 @@ If any condition is unmet, stop. Do not switch automatically to Option C.
 
 | ID | Decision required | Current state |
 |---|---|---|
-| `H1` | Select Option B, select the conditional fallback, or reject both | **PENDING HUMAN DECISION** |
+| `H1` | Select Option B, select the conditional fallback, or reject both | **APPROVED 2026-08-27 — OPTION B** |
 | `H2` | Determine whether the non-official academic/research use is permitted given the EULA and specification Appendix F | **HUMAN / LEGAL REVIEW REQUIRED** |
-| `H3` | Determine the current public GitHub redistribution/remediation disposition, including embedded notices, export, existing history, and forks | **HUMAN / LEGAL REVIEW REQUIRED** |
-| `H4` | Identify the individual/organization licensee, authorized acceptor/contact, and acceptable non-PII acceptance evidence | **PENDING HUMAN DECISION** |
-| `H5` | Approve local-only build/use and decide whether hosted CI or a private archive cache satisfies the license/direct-control boundary | **HUMAN / LEGAL REVIEW REQUIRED** |
-| `H6` | Confirm that no toolkit-derived binary/container/CI artifact will be distributed unless separately approved | **PENDING HUMAN DECISION** |
-| `H7` | If Option B is selected, authorize or defer removal of the current toolkit from the active tree; any Git-history rewrite is a separate destructive decision | **PENDING HUMAN DECISION** |
-| `H8` | Approve the P04B contract below, including the dedicated build environment and scoped ignore changes | **PENDING HUMAN DECISION** |
+| `H3` | Determine the current public GitHub redistribution/remediation disposition, including embedded notices, export, existing history, and forks | **PARTIAL — ACTIVE-TREE REMOVAL APPROVED; HISTORICAL/LEGAL DISPOSITION STILL REQUIRED; NO HISTORY REWRITE** |
+| `H4` | Identify the individual/organization licensee, authorized acceptor/contact, and acceptable non-PII acceptance evidence | **MISSING / UNKNOWN — DO NOT RECONSTRUCT** |
+| `H5` | Approve local-only build/use and decide whether hosted CI or a private archive cache satisfies the license/direct-control boundary | **P04B LOCAL-ONLY TECHNICAL BOUNDARY APPROVED; LICENSING/DIRECT-CONTROL AND HOSTED CI/CACHE REMAIN HUMAN / LEGAL REVIEW REQUIRED** |
+| `H6` | Confirm that no toolkit-derived binary/container/CI artifact will be distributed unless separately approved | **NO DISTRIBUTION AUTHORIZED BY P04B; BROADER DISPOSITION REMAINS HUMAN / LEGAL REVIEW REQUIRED** |
+| `H7` | If Option B is selected, authorize or defer removal of the current toolkit from the active tree; any Git-history rewrite is a separate destructive decision | **APPROVED 2026-08-27 — REMOVE ACTIVE TREE; NO HISTORY REWRITE** |
+| `H8` | Approve the P04B contract below, including the dedicated build environment and scoped ignore changes | **APPROVED 2026-08-27 — CONTRACT FROZEN IN SECTION 14** |
 
-P04B must not start until the decisions needed for its exact scope are recorded.
+P04B may start only under a separate implementation task and only within the
+frozen section 14 boundary. The unresolved legal/provenance items above are not
+silently resolved by the technical contract.
 
-## 14. Proposed P04B scope and target contract
+## 14. Frozen P04B scope and build contract
 
-P04B should implement only the approved toolkit acquisition/build boundary. The
-following contract is **PROPOSED**, not executed.
+**Status:** Human-frozen on `2026-08-27`; implementation and evidence remain
+`NOT_STARTED`.
 
-| Contract area | P04B target |
+P04B may implement only this acquisition, isolated build, and no-data verification
+boundary:
+
+```text
+Human-provided local ZIP
+  -> verify exact size and SHA-256
+  -> isolated protected extraction
+  -> dedicated toolkit-only Linux/amd64 build environment
+  -> build reviewed dependency closure for dsdgen + tpcds.idx
+  -> record artifact hashes and build manifest
+  -> no-data verification
+  -> STOP
+```
+
+### 14.1 Input contract
+
+| Field | Frozen value / rule |
 |---|---|
-| Toolkit version | Pin TPC-DS Tools/DSGen `4.0.0`; reject any version or source-tree mismatch. A version change requires a new reviewed contract. |
-| Provenance lock | Add a version-controlled, machine-readable record for authoritative page/request URLs, expected archive name, observed archive bytes/SHA-256, acquisition timestamp/evidence, EULA/spec versions and digests, extracted-file manifest digest, and wrapper code revision. Do not commit personal registration data or temporary links. |
-| Acquisition | Require a Human-supplied local archive obtained through the approved flow. The wrapper performs no network download and no acceptance action. |
-| Build environment | Create a toolkit-only, pinned Linux/`amd64` builder identified by immutable base-image digest and exact compiler, Make, libc, and required auxiliary-tool versions. Do not alter or embed this into `LOCAL_YARN_V1`. |
-| Isolation | Mount the input read-only; verify it before extraction; reject path traversal/symlinks and non-empty targets; extract/build in a unique ignored workspace; never modify the committed/current vendor tree. |
-| Build wrapper | Provide one Windows PowerShell 5.1-compatible entry point backed by an allowlisted container build step. Build only the reviewed dependency closure for `dsdgen` and `tpcds.idx`; never invoke upstream release, dataset, test, or cleanup workflows. Freeze the exact command only after reviewing the target graph during P04B. |
-| Artifact root | Proposed local ignored root: `artifacts/tpcds_toolkit/<toolkit_build_id>/`. It is not a distribution location. |
-| Binary path | Canonical proposed Linux path: `artifacts/tpcds_toolkit/<toolkit_build_id>/bin/dsdgen`. Record filename, platform/architecture, byte size, SHA-256, source lock, builder digest, toolchain, and resolved build command. |
-| Executable identity | Verify source version 4.0.0 and use a separately reviewed no-data runtime identity invocation if the actual binary supports one. Do not invent a version flag. Bind identity primarily through the build manifest and binary digest. |
-| `tpcds.idx` | Treat it as a required build/runtime support artifact, not dataset data. Proposed path: `artifacts/tpcds_toolkit/<toolkit_build_id>/share/tpcds/tpcds.idx`; record size/SHA-256/generation lineage and use an explicit resolved `DISTRIBUTIONS` path. |
-| Logs and manifest | Record start/end UTC timestamps, status, exact resolved command, source/archive IDs, builder/tool versions, output hashes, warnings, and sanitized failure details. Keep raw logs local/ignored; commit only the approved non-sensitive lock/contract metadata. |
-| Error handling | Fail closed on checksum, version, manifest, toolchain, path, or output mismatch. Never promote partial output, silently change toolchains, fall back to the current tree, run upstream tests, or delete source/data through upstream cleanup targets. |
-| Ignore boundary | Add scoped rules for the approved archive cache, extraction/build roots, objects, generated headers, markers, binaries, `tpcds.idx`, logs, raw `.dat`, Parquet, and temporary generator outputs. Prefer directory-scoped rules over hiding all files of a common extension. |
-| Repeatable verification | Provide one project-owned no-data verification command that checks the lock, source/extraction manifest, builder identity, binary and `tpcds.idx` hashes, and approved version evidence; asserts no generator/materialization outputs and no source mutation; and returns explicit pass/fail. Compare two clean builds before claiming bit reproducibility and record any negative result. |
-| Repository disposition | If and only if `H3`/`H7` authorize it, remove the toolkit from the active tree under a separately reviewed mutation. Do not rewrite Git history without distinct explicit authorization. |
+| Toolkit | TPC-DS Tools / DSGen `4.0.0` |
+| Repository-relative archive path | `.local/tpcds/BBC82A1E-AE00-4C0B-9255-EBAF6CA0972B-TPC-DS-Tool.zip` |
+| Archive size | Exactly `7,479,651` bytes |
+| Archive SHA-256 | Exactly `d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d` |
+| Integrity meaning | Locally calculated retained-artifact identity; **not** a publisher-authenticated checksum or signature |
+| Mismatch policy | Fail before extraction on missing file, non-regular file, size mismatch, or SHA-256 mismatch; no fallback source |
 
-P04B should stop after reproducible build evidence is reviewed at the applicable
-toolkit gate. It must not generate TPC-DS data.
+The P04B wrapper must resolve the path beneath the repository root, read the ZIP
+without modifying it, and calculate its size and SHA-256 before extraction and
+again after build verification. It must perform no download, TPC website access,
+registration, EULA acceptance, or reconstruction of missing acquisition facts.
+
+### 14.2 Extraction and source identity contract
+
+- P04B must add/verify directory-scoped Git ignores before creating any workspace
+  or output under `artifacts/tpcds_toolkit/`. It must not add broad rules such as
+  `*.zip`, `*.dat`, or `*.parquet`.
+- Use a unique workspace at
+  `artifacts/tpcds_toolkit/.work/<toolkit_build_id>/` with separate `source/` and
+  writable `build/` subdirectories. The resolved workspace must remain beneath
+  `artifacts/tpcds_toolkit/.work/`, must not already exist, and must not be a
+  symlink or reparse point. Refuse reuse or overwrite.
+- Preflight every ZIP entry before writing. Reject absolute/rooted paths, drive or
+  UNC prefixes, `..` traversal, paths that resolve outside `source/`, duplicate
+  normalized paths, and entries represented as symlinks or other unsupported
+  special files. Do not follow symlinks or reparse points during validation.
+- Extract only into the empty ignored `source/` directory. Never extract into the
+  repository root, tracked source, the historical toolkit path, or the final
+  artifact directory.
+- Treat extracted `source/` as immutable. Build only from a separate `build/`
+  copy/worktree because the upstream Make graph writes generated files beside
+  source files. Verify the immutable source identity again after the build.
+- Create a deterministic extraction manifest with one regular-file record per
+  normalized relative path: lowercase file SHA-256, byte size, and path, sorted by
+  ordinal path order and serialized as UTF-8 with LF endings. Record the SHA-256
+  of that serialized manifest as `source_manifest_sha256`.
+- The retained ZIP must remain byte-for-byte unchanged. Extraction does not make
+  the historical Git tree canonical and must not compare/fall back to it silently.
+
+### 14.3 Dedicated build environment contract
+
+- Use a toolkit-only Linux/`amd64` container/build environment, separate from and
+  making no change to `LOCAL_YARN_V1`.
+- Pin the base image by immutable digest, not a floating tag, and record its
+  resolved OS release, architecture, libc, compiler, GNU Make, flex-or-lex,
+  bison-or-yacc, and every auxiliary tool/package used by the reviewed dependency
+  closure.
+- Exact base-image digest and toolchain package versions are
+  `TBD_P04B_RESOLVE_BEFORE_BUILD`. P04B must select, record, and fail closed on
+  them before invoking any build command. No implicit host compiler/toolchain is
+  allowed.
+- Mount the archive and immutable extracted source read-only where practical. Give
+  the builder write access only to the unique ignored build/output workspace.
+- Do not embed toolkit packages, source, or build logic into the Spark/Hadoop
+  runtime images or Compose topology.
+
+### 14.4 Build target and command contract
+
+Build only the reviewed dependency closure required to produce:
+
+- `dsdgen` for Linux/`amd64`;
+- `tpcds.idx`;
+- runtime support files proven necessary for that exact `dsdgen`/`tpcds.idx`
+  pairing.
+
+The exact allowlisted command/working directory is
+`TBD_P04B_AFTER_READ_ONLY_TARGET_GRAPH_REVIEW`. P04B must freeze it in project-owned
+configuration before execution and record it as an argv array and display string
+in the manifest. This TBD does not permit experimentation with broad upstream
+targets.
+
+Never invoke upstream `all`, `release`, `data_set`, cleanup/`clean`, database,
+broad test, benchmark-generation, or dataset-generation workflows. Do not build
+`dsqgen`, `checksum`, tests, or unrelated programs unless read-only target-graph
+evidence proves a helper is in the minimum required dependency closure; record
+that evidence and artifact disposition. Never execute `dsdgen` during P04B.
+
+Do not invent or call a version flag. Bind executable identity primarily to the
+archive/source manifest, frozen builder/toolchain, exact build command, and
+observed binary hash. A no-data version invocation may be added only after source
+evidence proves the exact invocation is supported and a Human-reviewed contract
+amendment authorizes it.
+
+### 14.5 Output and promotion contract
+
+Successful local output uses this ignored, non-distribution layout:
+
+```text
+artifacts/tpcds_toolkit/<toolkit_build_id>/
+├── bin/dsdgen
+├── share/tpcds/tpcds.idx
+├── build_manifest.json
+└── logs/
+```
+
+`toolkit_build_id` must use:
+
+```text
+tpcds-tools-4.0.0-<archive-sha256-first12>-<builder-digest-first12>-<UTC-yyyyMMddTHHmmssZ>
+```
+
+Refuse an existing ID/path. Build and verify in `.work/<toolkit_build_id>/`; do not
+populate the final artifact path until every required check passes. Promote the
+complete directory as one bounded operation. Raw logs, source, objects, generated
+headers, helpers, binaries, `tpcds.idx`, and manifests remain local and ignored.
+They are not release, registry, CI, or redistribution artifacts.
+
+### 14.6 Manifest contract
+
+`build_manifest.json` uses schema identifier
+`tpcds_toolkit_build_manifest/v1` and records at minimum:
+
+- `toolkit_build_id`, toolkit name/version, manifest schema, and status;
+- repository-relative archive path, observed archive size, SHA-256, and the fact
+  that the checksum is locally calculated rather than publisher-authenticated;
+- extracted root identity, deterministic extraction-manifest path/digest, source
+  version evidence, and pre/post source identity checks;
+- builder image reference/digest, OS/architecture, libc, compiler, GNU Make,
+  flex-or-lex, bison-or-yacc, and auxiliary package/tool versions;
+- exact working directory, environment inputs, allowlisted build argv/display
+  command, and effective `DISTRIBUTIONS` reference;
+- start/end UTC timestamps, final status, promotion status, code revision, and
+  hashes of project-owned wrapper/config inputs;
+- `dsdgen` relative path, platform/architecture, exact byte size, and SHA-256;
+- `tpcds.idx` relative path, exact byte size, SHA-256, and generation/build
+  lineage;
+- any other retained runtime-support artifact path, purpose, size, and SHA-256;
+- structured warnings, errors, anomaly/negative-result notes, and sanitized log
+  references.
+
+Unavailable acquisition provenance remains explicitly `null`/`MISSING`; do not
+invent an original timestamp, temporary URL, publisher checksum, acceptor identity,
+or acceptance record.
+
+### 14.7 Failure policy
+
+- Fail closed on input, path, extraction, source-manifest, version, builder,
+  toolchain, command, output, or post-build verification mismatch.
+- Never download or select another archive, use the removed vendored tree, change
+  toolkit version, or silently change the builder/toolchain/command.
+- Never promote partial outputs. Retain an ignored failure manifest and sanitized
+  logs under the unique `.work/<toolkit_build_id>/` with status `FAILED`; leave no
+  canonical `bin/` or `share/` artifact path.
+- Never call upstream cleanup workflows to recover. A retry uses a new empty unique
+  workspace and build ID while preserving negative evidence.
+- No build or verification step may execute `dsdgen`, generate benchmark data, or
+  contact HDFS, Spark, or YARN.
+
+### 14.8 No-data verification and stop condition
+
+One project-owned verification entry point must return explicit pass/fail and
+confirm:
+
+1. the archive still exists with the frozen byte size and SHA-256;
+2. the immutable extracted-source manifest is unchanged;
+3. the builder/toolchain and exact build command match the manifest;
+4. `bin/dsdgen` exists, is a Linux/`amd64` executable, and has recorded size/hash;
+5. `share/tpcds/tpcds.idx` exists and has recorded size/hash;
+6. every retained runtime-support artifact and effective `DISTRIBUTIONS` reference
+   is present and recorded;
+7. no `.dat`, Parquet, dataset/materialization output, HDFS write, Spark action, or
+   YARN action occurred;
+8. no tracked source, historical toolkit path, or `LOCAL_YARN_V1` file changed;
+9. no unsupported `dsdgen` version flag or generator invocation occurred; and
+10. no partial output was promoted.
+
+Compare two clean isolated builds under the same frozen inputs before claiming
+bit reproducibility. Record mismatches as a negative result and do not claim bit
+reproducibility when hashes differ.
+
+P04B stops after the local build and no-data evidence is reviewed. It must not
+generate TPC-DS benchmark data.
+
+### 14.9 Values intentionally TBD until P04B
+
+| Value | Required resolution point |
+|---|---|
+| Immutable builder base-image reference/digest | Before any build command |
+| Exact compiler, GNU Make, flex-or-lex, bison-or-yacc, libc, and auxiliary versions | Before any build command |
+| Exact minimum dependency closure and allowlisted build argv/working directory | After read-only target-graph review and before execution |
+| Extracted-source manifest and `source_manifest_sha256` | After protected extraction, before build |
+| Exact runtime-support list and effective `DISTRIBUTIONS` path | Before artifact promotion |
+| `toolkit_build_id`, code revision, timestamps, builder identity, logs, and status | Per P04B build attempt |
+| `dsdgen`, `tpcds.idx`, and support-artifact sizes/SHA-256 values | Observed after build, before promotion |
+
+These TBDs are bounded observations/selections required by the frozen contract;
+they are not permission to broaden P04B.
 
 ### Generated-data boundary
 
@@ -370,9 +583,10 @@ later explicit contract states otherwise.
 
 ## 15. Explicit non-goals
 
-P04A does not implement any acquisition or build strategy. If approved, P04B may
-produce only the verified local `dsdgen` and support artifacts defined in section
-14; it must not publish or distribute a toolkit binary/container. Neither task may:
+This P04A decision/cleanup task does not implement acquisition or build tooling.
+Under a separate implementation task, P04B may produce only the verified local
+`dsdgen` and support artifacts defined in section 14; it must not publish or
+distribute a toolkit binary/container. Neither task may:
 
 - execute `dsdgen` or generate TPC-DS data;
 - create a dataset-generation wrapper;
@@ -384,6 +598,9 @@ produce only the verified local `dsdgen` and support artifacts defined in sectio
 - change `LOCAL_YARN_V1`, resolve `C1`, or run `EXP_001`;
 - change collector, schema, feature/leakage, ML, recommendation, or evaluation
   contracts;
-- approve T1/T2/T3 or any Research Gate.
+- self-approve T3 or any Research Gate. The T1/T2-related decisions recorded here
+  are direct Human approvals and do not approve later gates.
 
-P04A STATUS: READY_FOR_HUMAN_DECISION
+P04A STATUS: HUMAN_APPROVED — OPTION B / ACTIVE-TREE REMOVAL
+
+P04B CONTRACT: FROZEN / IMPLEMENTATION NOT_STARTED / DATA GENERATION NOT_STARTED
