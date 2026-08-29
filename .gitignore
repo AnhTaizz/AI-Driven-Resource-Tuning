@@ -3,4 +3,5 @@ configs/environments/*.env
 !configs/environments/*.env.example
 artifacts/environment_snapshots/
 artifacts/infrastructure_smoke/
-
+artifacts/tpcds_toolkit/
+artifacts/tpcds_raw/

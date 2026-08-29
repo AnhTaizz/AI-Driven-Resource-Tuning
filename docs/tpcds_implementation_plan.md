@@ -8,8 +8,14 @@ On `2026-08-27`, the Human Tech Lead separately approved Option B external/pinne
 upstream acquisition, removal of the previously extracted toolkit from the active
 tree, and the frozen P04B no-data build contract in
 `docs/tpcds_toolkit_integration_review_packet.md`. Existing Git history remains
-unchanged and no history rewrite is authorized. Toolkit build and dataset
-generation remain `NOT_STARTED`.
+unchanged and no history rewrite is authorized. P04B toolkit build is locally
+implemented, repeat-build verified, and stated as passed by the Human in the D1
+task premise as of `2026-08-28`. D1 is Human-approved. The first D2 generation
+attempt became terminal `PARTIAL`; a storage-only orchestration correction was
+Human-approved on `2026-08-29`. The corrected attempt is locally `VERIFIED` and
+Human-approved as the canonical `TPCDS_SF1` version 1 raw generation. D3 freezes
+`debug_store_sales_row_limit = 500000`; no debug derivation, materialization, or
+workload execution has begun.
 
 The plan migrates only the benchmark data/workload foundation. It does not redesign Spark-on-YARN infrastructure, collection, the execution-level data model, feature availability/leakage rules, ML formulation, evaluation, optimization, or recommendation policy.
 
@@ -146,6 +152,12 @@ Implement only the T2-approved build path, keep upstream tests inert, bind execu
 
 **Review Gate T3:** Reproducible build evidence and runtime artifact identities accepted. T3 does not authorize data generation.
 
+**Gate update:** two clean local isolated builds matched on source,
+builder/toolchain, exact project-owned inputs and argv, `dsdgen`, and `tpcds.idx`.
+Independent no-data verification passed. The Human's D1 task states that P04B
+has passed, so T3 is recorded as **PASSED** on `2026-08-28`. T3 did not generate
+data and does not by itself authorize Step 5.
+
 ### Step 4 — Dataset Definition Contract
 
 Documentation/configuration only at first:
@@ -159,6 +171,17 @@ Documentation/configuration only at first:
 
 **Review Gate D1:** Human approval of both dataset definitions and generator invocations. No generation before D1.
 
+**Contract update:** `docs/benchmark_data_spec.md` now freezes the D1 proposal:
+canonical P04B Build A; one non-parallel, full-standard-table `SCALE=1` generation
+with explicit RNG seed, output, format, distribution, overwrite, quiet, and child
+semantics; `TPCDS_DEBUG` version 1 as a deterministic hash-ranked reduction of
+that verified SF1 parent with exact `item`/`date_dim` relationship closure; and
+the immutable artifact, manifest, repeatability, and failure lifecycle. D3 now
+freezes the Human-approved bounded `debug_store_sales_row_limit = 500000`. D1 is
+**HUMAN_APPROVED**. The first D2 generation is preserved
+as `PARTIAL`; it is not valid dataset input. The corrected Linux-volume attempt
+is locally `VERIFIED` and Review Gate D2 is **HUMAN_APPROVED**.
+
 ### Step 5 — Raw Generation Integration
 
 Implement only the reviewed generator wrapper:
@@ -166,11 +189,33 @@ Implement only the reviewed generator wrapper:
 1. run with explicit effective parameters (including `DISTRIBUTIONS`, `TERMINATE`, `FORCE`, and `QUIET`), pinned runtime artifacts, and bounded resources;
 2. preserve logs and raw outputs immutably;
 3. calculate hashes and write the generation manifest;
-4. test reviewed table/content repeatability on the approved debug path while separately preserving/reporting non-deterministic generator metadata;
+4. test the frozen SF1 analytical-table repeatability and the approved debug
+   derivation repeatability while separately preserving/reporting non-deterministic
+   `dbgen_version` metadata;
 5. retain failures/partial outputs with explicit status.
 6. use a resolved unique empty output directory outside the vendored source/build tree; reject symlink/path escape, refuse overwrite/`FORCE` against any verified or partial artifact, and never invoke upstream tests or cleanup scripts.
+7. stage `/output` on a unique Docker-managed Linux volume, validate there after
+   successful generation, bulk-copy once into the empty repository raw directory,
+   and require exact pre/post-copy filename, size, SHA-256, row-count, and record-
+   termination equality before `VERIFIED`.
 
-**Review Gate D2:** Raw debug generation integrity and reproducibility accepted. D2 does not authorize Parquet materialization or Spark workloads.
+**Approved D2 correction:** the first attempt used a Docker Desktop `9p` bind
+mount to host NTFS and became `PARTIAL` after an `unexpected EOF`. On `2026-08-29`
+the Human approved changing only the output-storage orchestration to the Linux-
+volume lifecycle above. Build A, generator argv/environment, seed, table scope,
+format, overwrite behavior, child value, and absence of `-PARALLEL` are unchanged.
+
+**Review Gate D2:** The Human accepted the corrected SF1 raw generation and its
+Linux-side, transfer, integrity, and clean-repeat evidence on `2026-08-29`.
+Canonical generation ID:
+`tpcds_sf1-v1-20260829T111756030Z-7d5077c4df68486595486c875162e614`.
+D2 does not approve a debug derivation, Parquet materialization, or Spark
+workload.
+
+**D3 calibration decision:** the Human freezes
+`debug_store_sales_row_limit = 500000` for `TPCDS_DEBUG` version 1. D4 must use
+the D1 deterministic hash-ranked three-table derivation and obtain identical
+clean-repeat evidence; D3 itself creates no derived raw data.
 
 ### Step 6 — Materialization Contract
 
@@ -236,14 +281,18 @@ T1–T3, D1/D2, M1/M2, W1–W4, and B1 are implementation review gates, not repl
 
 - toolkit integration option and active-tree disposition are resolved as Option B
   with removal of the old extracted tree; existing history remains unchanged;
-- exact P04B builder image/digest, toolchain versions, minimum dependency closure,
+- P04B builder image/digest, toolchain versions, minimum dependency closure,
   allowlisted build command, extraction manifest, runtime support list, and output
-  identities remain bounded implementation-time TBDs;
+  identities are locally resolved and repeat-build verified; the Human's D1 task
+  premise records P04B/T3 as passed on `2026-08-28`;
 - licensing/direct-control, licensee/acceptance evidence, historical public-Git
   redistribution and embedded notices, hosted CI/private archive cache, export,
   and derived binary/container distribution remain Human/Legal decisions;
-- exact `TPCDS_DEBUG` derivation;
-- raw generation table scope and parameters;
+- D1 and D2 are Human-approved; the first D2 attempt remains terminal `PARTIAL`,
+  and the corrected D2 attempt is the canonical `TPCDS_SF1` version 1 raw
+  generation;
+- D3 freezes `debug_store_sales_row_limit = 500000`; deterministic D4 derivation
+  and its two-clean-run integrity/relationship evidence remain pending;
 - materialization schemas, partitioning, HDFS paths, and correctness rules;
 - exact SQL/action/check contracts for all six workloads;
 - controlled skew coverage after profiling;

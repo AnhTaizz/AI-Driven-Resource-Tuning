@@ -13,11 +13,16 @@
 
 ## Local Benchmark Strategy
 
-- Benchmark strategy implementation status: **PLANNED / NOT_STARTED**
+- Benchmark strategy implementation status: **P04B/T3 PASSED; D1 HUMAN-APPROVED; D2 HUMAN-APPROVED; D3 SIZE FROZEN**; no derived debug dataset, materialized dataset, workload, or experiment exists yet.
 - Toolkit integration decision: **Option B — external/pinned upstream acquisition**, Human-approved on `2026-08-27` for TPC-DS Tools / DSGen `4.0.0`.
 - Canonical local toolkit input: `.local/tpcds/BBC82A1E-AE00-4C0B-9255-EBAF6CA0972B-TPC-DS-Tool.zip`; observed size `7,479,651` bytes and locally calculated SHA-256 `d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d`. This digest is a local artifact identity, not a publisher-authenticated checksum.
 - Active-tree toolkit disposition: the Human-approved removal of `B0CF2ADA-2F20-4296-A89C-81B8202DCD13-TPC-DS-Tool/` removes the prior extracted copy from the active repository tree. Existing Git history is preserved; no history rewrite is authorized.
-- P04B build contract: **FROZEN / NOT_STARTED** in `docs/tpcds_toolkit_integration_review_packet.md`. Toolkit extraction/build, `dsdgen`, `tpcds.idx`, and dataset generation remain **NOT_STARTED**.
+- P04B build contract: **FROZEN / IMPLEMENTED / LOCALLY VERIFIED / T3 PASSED** in `docs/tpcds_toolkit_integration_review_packet.md`. Two clean isolated builds produced matching local `dsdgen` and `tpcds.idx` identities. Build A remains the only authorized D2 generator input.
+- P04B observed builder/build evidence: Debian 12 `linux/amd64` base `sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867`; local builder image ID `sha256:5436771f2f991b628573da053c84d553d5e24249a6b14c1f00a8db9d96d2007e`; GCC `12.2.0`, GNU Make `4.3`, flex `2.6.4`, Bison `3.8.2`, and glibc `2.36`. Final candidate builds `tpcds-tools-4.0.0-d63e2bf093e2-5436771f2f99-20260828T022901Z` and `tpcds-tools-4.0.0-d63e2bf093e2-5436771f2f99-20260828T023020Z` matched on source manifest, builder/toolchain, exact build inputs, `dsdgen` SHA-256 `abfb87f7f9af017474969519dafa9fed34e61808d57114d6c7eee7f57549221f`, and `tpcds.idx` SHA-256 `19c11f3bc9745b342346ae3f5982f9fac33f8dcf0dd88f71db86f737489a2e5a`. Evidence is local and Git-ignored; no distribution is authorized.
+- D1 generation contract: **HUMAN_APPROVED** in `docs/benchmark_data_spec.md`. `TPCDS_SF1` version 1 pins P04B Build A and a single-process, full-standard-table, scale-1 invocation with RNG seed `19620718`; only the approved six-table scope may be materialized later. `TPCDS_DEBUG` version 1 remains a later deterministic reduction, and D3 freezes `debug_store_sales_row_limit = 500000` under direct Human approval.
+- D2 attempt `tpcds_sf1-v1-20260828T045222383Z-76d08a2ed9484671adfc1e48eac911fd` is immutable `PARTIAL`: 18/25 files, 671,144,585 bytes, 15,518,293 complete physical records, partial `store_sales`/`store_returns`, and no observed exit code after Docker API `unexpected EOF`. It is not consumable dataset evidence.
+- D2 storage correction: **HUMAN_APPROVED on 2026-08-29**. A new generation ID may keep the exact D1 Build A/argv/environment while staging `/output` on a Docker-managed Linux volume, validating inside Linux, bulk-copying into the repository raw target, and requiring exact pre/post-copy identity before `VERIFIED`.
+- Corrected D2 generation `tpcds_sf1-v1-20260829T111756030Z-7d5077c4df68486595486c875162e614` is the canonical `TPCDS_SF1` version 1 raw generation and **D2 was HUMAN_APPROVED on 2026-08-29**: 25/25 raw files, 1,253,309,714 bytes, and 19,557,376 physical records. Linux-side and repository copies match exactly on filename, bytes, row counts, SHA-256, CR absence, and final `|\n`; all 24 analytical tables also match an independent clean repeat on raw SHA-256 and row-multiset SHA-256. The repeat-specific `dbgen_version` metadata is intentionally excluded from cross-attempt equality.
 - Environment status: `LOCAL_YARN_V1` = **VERIFIED**
 - Host: personal workstation with **16 GB physical RAM**; the approved infrastructure bundle observed an Intel Core i5-12450H with 8 physical cores / 12 logical processors.
 - Logical topology: **two YARN NodeManagers on one physical host**.
@@ -54,7 +59,7 @@
 - Approved decisions: `docs/adr/ADR-0001-mvp-runtime-and-scope.md`, `docs/adr/ADR-0002-parallel-sql-boundary.md`, and `docs/adr/ADR-0004-adopt-tpc-ds-as-controlled-benchmark-foundation.md`.
 - Local benchmark/bootstrap boundary: `docs/adr/ADR-0003-local-benchmark-environment-and-bootstrap.md`.
 - ADR-0003 remains unchanged historical evidence. ADR-0004 supersedes only its old custom dataset/workload foundation and bootstrap identifiers.
-- Initial dataset plan: `TPCDS_DEBUG` / `dataset_version = 1` for bootstrap and `TPCDS_SF1` / `dataset_version = 1` for later coverage.
+- Initial dataset plan: `TPCDS_SF1` / `dataset_version = 1` has the Human-approved canonical immutable raw parent identified above; selected six-table materialization has not begun. `TPCDS_DEBUG` / `dataset_version = 1` is frozen as a deterministic three-table (`store_sales`, `item`, `date_dim`) bootstrap reduction with `debug_store_sales_row_limit = 500000`; D4 derivation has not begun and the dataset does not yet exist.
 - Initial workload plan: `W01_TPCDS_SCAN`, `W02_TPCDS_AGG`, `W03_TPCDS_JOIN`, `W04_TPCDS_MULTI_JOIN`, `W05_TPCDS_SHUFFLE_SORT`, and `W06_TPCDS_COMPLEX_SQL`, each with separate `workload_version = 1`.
 - Planned bootstrap lineage: `EXP_001 -> LOCAL_YARN_V1 -> TPCDS_DEBUG -> W03_TPCDS_JOIN -> C1`; `C1` remains TBD and `EXP_001` is not authorized.
 
@@ -68,7 +73,7 @@ Approved collection sources:
 
 Dataset provenance:
 
-- TPC-DS-based controlled benchmark executions generated by this project; no dataset or workload has been generated/implemented under the new foundation yet.
+- Human-approved immutable `TPCDS_SF1` version 1 raw generator output exists as synthetic benchmark input. No derived debug dataset, materialized dataset, Spark/YARN benchmark execution, or implemented workload exists under the new foundation yet.
 - No production historical data is assumed for the MVP.
 
 Version note:
@@ -112,9 +117,9 @@ Phase 1 must produce:
 - Phase/component ownership for within-application concurrency and evidence-backed post-run diagnostics: **TBD / human approval required**.
 - Exact `C1` bootstrap values for executor count, executor cores, executor memory, memory overhead, driver/ApplicationMaster overhead, and shuffle partitions: **TBD**. Environment verification is satisfied, but `C1` still requires a separate conservative configuration review and Human approval.
 - Before systematic benchmark experiments, a separate Human-reviewed calibration step must validate usable dataset scale, usable resource envelope, host memory pressure, swap/paging behavior, repeat-run variability, and background-load/noise controls. This calibration is not performed or approved by P03.
-- TPC-DS Option B integration and active-tree disposition are approved. Exact P04B builder image/digest, compiler/Make/flex-or-lex/bison-or-yacc/libc versions, allowlisted build command, extracted-source manifest identity, runtime-support closure, and output hashes remain **TBD / fail-closed until resolved under the frozen P04B contract**.
+- TPC-DS Option B integration and active-tree disposition are approved. P04B resolved and locally verified the builder image, compiler/Make/flex/bison/libc versions, allowlisted build command, extracted-source manifest identity, runtime-support closure, and output hashes. The Human's D1 task premise records P04B/T3 as passed; no data generation was authorized or performed by P04B.
 - Toolkit licensing/direct-control, licensee/acceptance evidence, historical public-Git redistribution, embedded third-party notices, export, hosted-CI/private-cache use, and binary/container distribution remain **HUMAN / LEGAL REVIEW REQUIRED**. Missing acquisition facts must not be reconstructed, and the local SHA-256 is not a publisher checksum.
-- Exact deterministic definition of `TPCDS_DEBUG`, raw generation scope/parameters, materialization schemas/partitioning/HDFS paths, and relationship checks: **TBD / human review required**.
+- D1 and D2 are Human-approved. The corrected D2 attempt is the canonical `TPCDS_SF1` version 1 raw generation. D3 freezes `debug_store_sales_row_limit = 500000`; D4 derivation remains not started. Materialization schemas/partitioning/HDFS paths and the five materialized relationship-check thresholds remain **TBD / human review required**.
 - Exact SQL/action/correctness contracts for the six planned workload-version-1 definitions: **TBD**; `W03_TPCDS_JOIN` must be reviewed first for bootstrap readiness.
 - Authentication/security requirements for real cluster APIs: **TBD**
 - Input data size source for all workload types: **TBD**
@@ -133,7 +138,7 @@ Phase 1 must produce:
 - TPC-DS-derived Spark-on-YARN results may not transfer directly to a differently sized or configured production cluster.
 - The selected-table/project-workload design is not an official complete TPC-DS benchmark and cannot support official TPC result comparisons.
 - The old extracted toolkit is removed from the active tree under Human approval, but its bytes remain in unchanged Git history. Historical public redistribution, licensing, embedded-notice, and provenance concerns remain unresolved; Option B and the local archive identity do not retroactively authenticate those historical bytes.
-- `TPCDS_DEBUG` is not yet defined; assuming fractional scale, arbitrary sampling, target bytes, or preserved relationships would threaten reproducibility and validity.
+- `TPCDS_DEBUG` version 1 is contract-defined but not yet derived. Its observed derived sizes, referenced dimension counts, hashes, and validation results remain unavailable until separately authorized D4; substituting fractional scale, independent dimension sampling, target bytes, or a different row limit would violate the frozen contract.
 - The initial workload suite does not yet guarantee controlled skew coverage; any skew claim must be based on observed profiling/execution evidence.
 - Local recommendations are environment-specific. Production/company deployment requires collection and retraining or explicit calibration using execution history from the target environment.
 - SQL execution/stage concurrency metadata may be absent for some workloads or source versions.
@@ -154,9 +159,14 @@ Completed prerequisite A:
 
 Remaining independent prerequisite B:
   Option B integration and active-tree cleanup decision -> APPROVED on 2026-08-27
-  P04B reproducible no-data build contract -> FROZEN / implementation NOT_STARTED
-    -> next implement the isolated dsdgen + tpcds.idx build and no-data verification
-    -> later approve TPCDS_DEBUG, materialization, and W03 contracts
+  P04B reproducible no-data build contract -> FROZEN / local implementation VERIFIED / T3 PASSED
+    -> D1 TPCDS_DEBUG / TPCDS_SF1 generation contract HUMAN_APPROVED
+    -> first D2 attempt PARTIAL and immutable
+    -> corrected Linux-volume generation HUMAN-APPROVED as canonical
+       TPCDS_SF1 / 1 on 2026-08-29
+    -> D3 debug_store_sales_row_limit = 500000 HUMAN-APPROVED / FROZEN
+    -> D4 deterministic TPCDS_DEBUG / 1 derivation not started
+    -> later approve materialization and W03 contracts
 
 B + collector/bootstrap readiness + separately approved C1
   -> human review of the exact EXP_001 specification

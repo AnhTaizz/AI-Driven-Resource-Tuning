@@ -7,7 +7,7 @@
 - Review status: **HUMAN APPROVED**
 - Selected strategy: **Option B — external/pinned upstream acquisition**
 - Active-tree disposition: **REMOVE THE PREVIOUSLY EXTRACTED TOOLKIT**; preserve existing Git history and perform no history rewrite
-- P04B contract status: **FROZEN / IMPLEMENTATION NOT_STARTED**
+- P04B contract status: **FROZEN / LOCAL IMPLEMENTATION VERIFIED / T3 PASSED**
 
 This packet began as decision support. It now also records the Human Tech Lead's
 Option B decision, approved active-tree cleanup, and frozen P04B build contract.
@@ -19,8 +19,10 @@ generated.
 
 ## 1. Current state
 
-- TPC-DS remains `PLANNED / NOT_STARTED`; toolkit build and dataset generation are
-  `NOT_STARTED`; the Data Gate remains `NOT_APPROVED`.
+- P04B toolkit build is locally implemented and repeat-build verified; the
+  Human's D1 task premise records P04B/T3 as passed. Downstream D2 raw generation
+  is Human-approved under its separate contract; P04B itself performed no data
+  generation. The Data Gate remains `NOT_APPROVED`.
 - The Human approved Option B on `2026-08-27` and authorized removal of the
   previously extracted third-party toolkit tree at
   `B0CF2ADA-2F20-4296-A89C-81B8202DCD13-TPC-DS-Tool/` from the active tree.
@@ -30,10 +32,9 @@ generated.
   `7,479,651` bytes with locally calculated SHA-256
   `d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d`.
   This digest is not a publisher-authenticated checksum.
-- Project-owned benchmark generation, dataset, workload, and experiment directories
-  contain placeholders only. No TPC-DS integration code exists.
-- No compiled generator, `tpcds.idx`, generated `.dat`, Parquet dataset, or
-  implemented TPC-DS Spark workload was found.
+- Project-owned P04B build configuration, isolated tooling, and tests now exist.
+  The compiled generator, `tpcds.idx`, and D2 raw `.dat` evidence remain local and
+  Git-ignored; no Parquet dataset or implemented TPC-DS Spark workload exists.
 - Before the approved cleanup, the entire old toolkit was tracked in Git. It was
   neither a submodule nor a Git LFS object and had no explicit `third_party` or
   `vendor` boundary.
@@ -347,8 +348,10 @@ silently resolved by the technical contract.
 
 ## 14. Frozen P04B scope and build contract
 
-**Status:** Human-frozen on `2026-08-27`; implementation and evidence remain
-`NOT_STARTED`.
+**Status:** Human-frozen on `2026-08-27`; locally implemented and verified on
+`2026-08-28`; the Human's D1 task premise records P04B/T3 as `PASSED`. P04B's
+no-data boundary remains unchanged; later D2 generation was separately
+Human-approved on `2026-08-29`.
 
 P04B may implement only this acquisition, isolated build, and no-data verification
 boundary:
@@ -556,6 +559,42 @@ generate TPC-DS benchmark data.
 These TBDs are bounded observations/selections required by the frozen contract;
 they are not permission to broaden P04B.
 
+### 14.10 Observed local P04B implementation evidence
+
+P04B resolved the bounded implementation-time values without changing the frozen
+scope:
+
+- builder: Debian 12 `linux/amd64`, immutable base platform digest
+  `sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867`,
+  and local content-addressed builder image ID
+  `sha256:5436771f2f991b628573da053c84d553d5e24249a6b14c1f00a8db9d96d2007e`;
+- toolchain: GCC `12.2.0`, GNU Make `4.3`, flex `2.6.4`, Bison `3.8.2`,
+  and glibc `2.36`;
+- exact allowlisted command:
+  `make -f makefile OS=LINUX CC=gcc LEX=flex 'YACC=bison -y' 'LINUX_CFLAGS=-g -Wall -fcommon' dsdgen tpcds.idx`;
+- immutable extracted-source manifest SHA-256:
+  `fc4ce972cbe5dfee624592ec786585c5cf58f936d15a47067b3f6c15cdb63a2e`;
+- final Build A/B IDs:
+  `tpcds-tools-4.0.0-d63e2bf093e2-5436771f2f99-20260828T022901Z` and
+  `tpcds-tools-4.0.0-d63e2bf093e2-5436771f2f99-20260828T023020Z`;
+- both builds produced a 539,776-byte Linux/amd64 `dsdgen` with SHA-256
+  `abfb87f7f9af017474969519dafa9fed34e61808d57114d6c7eee7f57549221f`
+  and a 640,585-byte `tpcds.idx` with SHA-256
+  `19c11f3bc9745b342346ae3f5982f9fac33f8dcf0dd88f71db86f737489a2e5a`;
+- repeat-build verification matched archive, source, builder/toolchain, exact
+  project-owned inputs and argv, and both output hashes;
+- a preceding failed isolated attempt was retained as negative evidence: GCC 12's
+  `-fno-common` default exposed multiple tentative global definitions in the legacy
+  source. The frozen wrapper uses GCC's documented legacy compatibility flag
+  `-fcommon`; upstream source remains unchanged; and
+- independent no-data verification passed for both final builds. `dsdgen` was not
+  executed, no benchmark dataset was created, and no HDFS, Spark, or YARN action
+  occurred.
+
+All build artifacts/evidence remain local and Git-ignored. This evidence does not
+self-approve D1, authorize distribution, or authorize data generation. The
+Human's later D1 task premise records P04B/T3 as passed.
+
 ### Generated-data boundary
 
 ```text
@@ -603,4 +642,4 @@ distribute a toolkit binary/container. Neither task may:
 
 P04A STATUS: HUMAN_APPROVED — OPTION B / ACTIVE-TREE REMOVAL
 
-P04B CONTRACT: FROZEN / IMPLEMENTATION NOT_STARTED / DATA GENERATION NOT_STARTED
+P04B CONTRACT: FROZEN / LOCAL IMPLEMENTATION VERIFIED / T3 PASSED / P04B NO-DATA BOUNDARY PRESERVED

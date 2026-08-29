@@ -1,0 +1,106 @@
+{
+  "schema_version": "tpcds_toolkit_build_config/v1",
+  "toolkit": {
+    "name": "TPC-DS Tools / DSGen",
+    "version": "4.0.0"
+  },
+  "archive": {
+    "repository_relative_path": ".local/tpcds/BBC82A1E-AE00-4C0B-9255-EBAF6CA0972B-TPC-DS-Tool.zip",
+    "size_bytes": 7479651,
+    "sha256": "d63e2bf093e23964b393364991be9fdd7a9cdd40fcdf91f99660eabde4c6162d",
+    "checksum_kind": "locally_calculated_continuity_identifier_not_publisher_authenticated"
+  },
+  "archive_layout": {
+    "source_root": "DSGen-software-code-4.0.0",
+    "allowed_top_level_roots": [
+      "DSGen-software-code-4.0.0",
+      "__MACOSX"
+    ],
+    "required_regular_files": [
+      "DSGen-software-code-4.0.0/EULA.txt",
+      "DSGen-software-code-4.0.0/tools/makefile",
+      "DSGen-software-code-4.0.0/tools/release.h",
+      "DSGen-software-code-4.0.0/tools/column_list.txt",
+      "DSGen-software-code-4.0.0/tools/tpcds.dst"
+    ]
+  },
+  "builder": {
+    "platform": "linux/amd64",
+    "base_image_reference": "docker.io/library/debian:bookworm-slim@sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867",
+    "base_image_platform_digest": "sha256:5ae3c39ebd15e229dcedd5cee596b2497182493d41ff162e824ba13fc1b2b867",
+    "local_image_tag": "ai-resource-tuning/tpcds-toolkit-builder:debian12-gcc12-v1",
+    "packages": {
+      "gcc": "4:12.2.0-3",
+      "gcc-12": "12.2.0-14+deb12u1",
+      "libgcc-12-dev": "12.2.0-14+deb12u1",
+      "libc6-dev": "2.36-9+deb12u14",
+      "make": "4.3-4.1",
+      "flex": "2.6.4-8.2",
+      "bison": "2:3.8.2+dfsg-1+b1",
+      "binutils": "2.40-2",
+      "file": "1:5.44-3"
+    },
+    "dependency_roles": {
+      "gcc": "required C compiler and linker driver",
+      "make": "required GNU Make implementation",
+      "libc6-dev": "required glibc development headers and startup objects",
+      "binutils": "required by GCC and used for ELF verification",
+      "file": "used only for ELF verification",
+      "flex": "recorded and pinned; not invoked by the allowlisted dsdgen/tpcds.idx closure",
+      "bison": "recorded and pinned; not invoked by the allowlisted dsdgen/tpcds.idx closure"
+    }
+  },
+  "build": {
+    "working_directory": "/workspace/build-source/DSGen-software-code-4.0.0/tools",
+    "argv": [
+      "make",
+      "-f",
+      "makefile",
+      "OS=LINUX",
+      "CC=gcc",
+      "LEX=flex",
+      "YACC=bison -y",
+      "LINUX_CFLAGS=-g -Wall -fcommon",
+      "dsdgen",
+      "tpcds.idx"
+    ],
+    "display_command": "make -f makefile OS=LINUX CC=gcc LEX=flex 'YACC=bison -y' 'LINUX_CFLAGS=-g -Wall -fcommon' dsdgen tpcds.idx",
+    "environment": {
+      "LANG": "C",
+      "LC_ALL": "C",
+      "TZ": "UTC"
+    },
+    "required_generated_headers": [
+      "columns.h",
+      "streams.h",
+      "tables.h",
+      "tpcds.idx.h"
+    ],
+    "helper_closure": [
+      "mkheader",
+      "distcomp"
+    ],
+    "compatibility_flags": {
+      "-fcommon": "Required for this legacy C source under GCC 10 and newer because the source contains tentative global definitions that otherwise fail to link under the modern -fno-common default. This preserves the older GCC common-symbol behavior without modifying upstream source."
+    },
+    "forbidden_targets": [
+      "all",
+      "release",
+      "data_set",
+      "clean",
+      "test_build",
+      "sum",
+      "tar",
+      "zip",
+      "dsqgen",
+      "checksum"
+    ]
+  },
+  "runtime": {
+    "dsdgen_relative_path": "bin/dsdgen",
+    "distributions_relative_path": "share/tpcds/tpcds.idx",
+    "distributions_parameter": "DISTRIBUTIONS",
+    "source_default": "tpcds.idx",
+    "required_future_invocation_contract": "Pass -DISTRIBUTIONS <artifact-root>/share/tpcds/tpcds.idx explicitly; the program opens that CLI path with fopen and does not resolve it from an environment variable."
+  }
+}
